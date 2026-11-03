@@ -86,7 +86,9 @@ const ADVKEYS={};GROUPS.forEach(g=>{ADVKEYS[g.id]=[];g.adv.forEach(c=>c.k&&ADVKE
 
 /* ---------- build controls ---------- */
 const groupsEl=document.getElementById("groups");
-function fontOptions(){let h="";if(S.custom.length)h+=`<optgroup label="Custom">${S.custom.map(f=>`<option value="${f}">${f}</option>`).join("")}</optgroup>`;
+// Custom font names come from the user or an imported JSON file, so escape them.
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function fontOptions(){let h="";if(S.custom.length)h+=`<optgroup label="Custom">${S.custom.map(f=>`<option value="${esc(f)}">${esc(f)}</option>`).join("")}</optgroup>`;
  for(const[c,l]of Object.entries(FONTS))h+=`<optgroup label="${c}">${l.map(f=>`<option value="${f}">${f}</option>`).join("")}</optgroup>`;return h}
 const allFonts=()=>[...S.custom,...Object.values(FONTS).flat()];
 function ctlHTML(c,adv){
@@ -213,7 +215,7 @@ document.getElementById("copy").addEventListener("click",()=>{const txt=document
  const fb=()=>{const r=document.createRange();r.selectNodeContents(document.getElementById("out"));const sel=getSelection();sel.removeAllRanges();sel.addRange(r);note.textContent="Selected. Press Ctrl+C to copy."};
  try{navigator.clipboard.writeText(txt).then(()=>{note.textContent="Copied."},fb)}catch(e){fb()}});
 document.getElementById("impgo").onclick=()=>{const n=document.getElementById("impnote");try{const j=JSON.parse(document.getElementById("imp").value);const src=j.$forge||j;
- if(!src||typeof src!=="object"||!("mode" in src))throw 0;S={...structuredClone(BASE),...src,o:src.o||{},custom:src.custom||[]};refreshFontSelects();apply();n.textContent="Loaded."}
+ if(!src||typeof src!=="object"||!("mode" in src))throw 0;S={...structuredClone(BASE),...src,o:src.o||{},custom:Array.isArray(src.custom)?src.custom.filter(f=>typeof f==="string"):[]};refreshFontSelects();apply();n.textContent="Loaded."}
  catch(e){n.textContent="That isn't a Token Forge export. Copy the JSON tab and paste it here."}};
 
 renderSaves();apply();
