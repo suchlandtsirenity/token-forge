@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Token Forge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+/* Layout: workbench — grouped control rail (simple on top, fine-tune folded underneath) beside a live specimen sheet */
+:root{
+  --c-bg:oklch(0.968 0.005 230);
+  --c-panel:oklch(0.993 0.003 230);
+  --c-fg:oklch(0.25 0.012 240);
+  --c-muted:oklch(0.5 0.014 240);
+  --c-line:oklch(0.88 0.008 240);
+  --c-accent:oklch(0.5 0.1 190);
+  --c-accent-soft:oklch(0.93 0.03 190);
+  --c-pin:oklch(0.6 0.13 65);
+  --f-ui:"Familjen Grotesk","Helvetica Neue",Arial,sans-serif;
+  --f-code:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --c-bg:oklch(0.17 0.008 240);--c-panel:oklch(0.21 0.009 240);--c-fg:oklch(0.93 0.006 240);
+  --c-muted:oklch(0.7 0.012 240);--c-line:oklch(0.32 0.01 240);--c-accent:oklch(0.76 0.1 190);
+  --c-accent-soft:oklch(0.3 0.04 190);--c-pin:oklch(0.78 0.12 70);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --c-bg:oklch(0.17 0.008 240);--c-panel:oklch(0.21 0.009 240);--c-fg:oklch(0.93 0.006 240);
+  --c-muted:oklch(0.7 0.012 240);--c-line:oklch(0.32 0.01 240);--c-accent:oklch(0.76 0.1 190);
+  --c-accent-soft:oklch(0.3 0.04 190);--c-pin:oklch(0.78 0.12 70);color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--c-bg);color:var(--c-fg);font-family:var(--f-ui);font-size:14px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px}
+.top{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;margin-bottom:14px}
+.top h1{font-size:20px;margin:0;letter-spacing:-0.01em}
+.top p{margin:0;color:var(--c-muted);max-width:70ch}
+.wrap{display:grid;grid-template-columns:minmax(0,350px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr)}.rail{order:2;position:static;max-height:none}.stagewrap{order:1}}
+.rail{position:sticky;top:max(16px,env(safe-area-inset-top,0px));max-height:calc(100vh - 32px);overflow:auto;
+  background:var(--c-panel);border:1px solid var(--c-line);border-radius:12px;display:flex;flex-direction:column}
+.blk{padding:12px 14px;border-bottom:1px solid var(--c-line);display:flex;flex-direction:column;gap:8px}
+.blk h2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--c-muted);margin:0;font-weight:700}
+details.grp{border-bottom:1px solid var(--c-line)}
+details.grp>summary{list-style:none;cursor:pointer;padding:11px 14px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px}
+details.grp>summary::-webkit-details-marker{display:none}
+details.grp>summary::before{content:"";width:7px;height:7px;border-right:1.5px solid var(--c-muted);border-bottom:1.5px solid var(--c-muted);transform:rotate(-45deg);transition:transform .15s;flex:none}
+details.grp[open]>summary::before{transform:rotate(45deg)}
+.pins{margin-left:auto;font-size:11px;font-weight:700;color:var(--c-pin);font-family:var(--f-code)}
+.gbody{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px}
+details.fine{border:1px dashed var(--c-line);border-radius:10px}
+details.fine>summary{cursor:pointer;padding:7px 10px;font-size:12px;color:var(--c-muted);display:flex;align-items:center;gap:8px}
+details.fine>summary .clr{margin-left:auto}
+details.fine .fbody{padding:4px 10px 10px;display:flex;flex-direction:column;gap:10px}
+.sub{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--c-muted);margin-top:4px;font-weight:700}
+.row{display:grid;grid-template-columns:1fr auto;gap:3px 8px;align-items:center}
+.row>label,.row>.lbl{font-size:13px}
+.rv{display:flex;align-items:center;gap:6px}
+.rv output{font-family:var(--f-code);font-size:11px;color:var(--c-muted);font-variant-numeric:tabular-nums}
+.row.pinned>label,.row.pinned>.lbl{color:var(--c-pin)}
+.row.pinned>label::after,.row.pinned>.lbl::after{content:" ●";font-size:9px;vertical-align:2px}
+.rst{font:inherit;font-size:10px;font-family:var(--f-code);padding:1px 6px;border-radius:5px;border:1px solid var(--c-pin);background:transparent;color:var(--c-pin);cursor:pointer}
+.row input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--c-accent)}
+.fontpick{grid-column:1/-1;display:grid;grid-template-columns:auto 1fr auto;gap:4px}
+select,input[type=text],textarea{font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--c-line);background:var(--c-bg);color:var(--c-fg);min-width:0;width:100%}
+textarea{font-family:var(--f-code);font-size:11.5px;min-height:90px;resize:vertical}
+.seg{display:flex;flex-wrap:wrap;gap:4px;grid-column:1/-1}
+.seg button,.btn{font:inherit;font-size:12px;padding:5px 9px;border-radius:7px;border:1px solid var(--c-line);background:var(--c-bg);color:var(--c-fg);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--c-accent-soft);border-color:var(--c-accent)}
+.btn:hover,.seg button:hover{border-color:var(--c-muted)}
+.btn.main{background:var(--c-accent);border-color:var(--c-accent);color:var(--c-panel)}
+.btn.sm{padding:3px 8px;font-size:11px}
+.flex{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.cw{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6px;font-size:12px;padding:4px;border:1px solid var(--c-line);border-radius:8px;min-width:0}
+.cw span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cw.pinned{border-color:var(--c-pin)}
+.cw input[type=color]{width:26px;height:22px;border:0;padding:0;background:none;cursor:pointer}
+.cw .rst{padding:0 4px}
+.chk{display:grid;grid-template-columns:1fr auto;gap:4px 8px;font-size:12px}
+.chk b{font-family:var(--f-code);font-weight:400;font-variant-numeric:tabular-nums}
+.pass{color:var(--c-accent)}.fail{color:var(--c-pin)}
+.note{font-size:12px;color:var(--c-muted)}
+:focus-visible{outline:2px solid var(--c-accent);outline-offset:2px}
+.stagewrap{min-width:0;display:flex;flex-direction:column;gap:12px}
+.stagebar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.export{background:var(--c-panel);border:1px solid var(--c-line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.export pre{margin:0;max-height:320px;overflow:auto;font-family:var(--f-code);font-size:11.5px;line-height:1.55;background:var(--c-bg);border:1px solid var(--c-line);border-radius:8px;padding:10px;white-space:pre}
+.saves{display:flex;flex-direction:column;gap:4px}
+.saves div{display:flex;gap:4px;align-items:center}
+.saves div button:first-child{flex:1;text-align:left}
+
+/* ===== the user's design system, scoped to #stage ===== */
+.ds{position:relative;isolation:isolate;background-color:var(--ds-bg);color:var(--ds-fg);font-family:var(--ds-f-body);font-weight:var(--ds-fw-b);
+  font-size:var(--ds-fs-0);line-height:var(--ds-lh-b);letter-spacing:var(--ds-ls-b);border-radius:14px;border:1px solid var(--c-line);
+  padding:var(--ds-gap);display:flex;flex-direction:column;gap:var(--ds-gap);margin-inline:auto;width:100%;overflow:hidden}
+.ds.phone{max-width:390px}
+.ds::before{content:"";position:absolute;inset:0;background-image:var(--ds-grain-img);opacity:var(--ds-grain);pointer-events:none;z-index:2;mix-blend-mode:multiply}
+.ds.isdark::before{mix-blend-mode:screen}
+.ds,.ds *{transition-property:background-color,border-color,border-radius,box-shadow,transform,color,filter;transition-duration:var(--ds-dur);transition-timing-function:var(--ds-ease)}
+.ds-bar{display:flex;flex-wrap:wrap;align-items:center;gap:var(--ds-gap);padding:var(--ds-ctl-py) var(--ds-ctl-px)}
+.ds-logo{font-family:var(--ds-f-display);font-size:var(--ds-fs-2);font-weight:var(--ds-fw-d);letter-spacing:var(--ds-ls-d);font-style:var(--ds-fst-d);text-transform:var(--ds-h-tt)}
+.ds-nav{display:flex;gap:4px;flex:1;flex-wrap:wrap}
+.ds-nav a{color:var(--ds-muted);text-decoration:none;padding:4px 10px;border-radius:var(--ds-r-btn);display:inline-flex;align-items:center;gap:6px}
+.ds-nav a[aria-current]{color:var(--ds-fg);background:var(--ds-surface-2)}
+.ds-mono{font-family:var(--ds-f-mono);font-variant-numeric:tabular-nums}
+.ds-num{font-family:var(--ds-f-num);font-variant-numeric:tabular-nums}
+.ds-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:var(--ds-gap)}
+.ds-card,.ds-bar{background:color-mix(in oklch,var(--ds-surface) var(--ds-card-a),transparent);border:var(--ds-bw-card) var(--ds-bstyle) var(--ds-border);
+  border-radius:var(--ds-r-card);box-shadow:var(--ds-shadow);backdrop-filter:blur(var(--ds-glass));-webkit-backdrop-filter:blur(var(--ds-glass))}
+.ds-card{padding:var(--ds-pad);display:flex;flex-direction:column;gap:calc(var(--ds-gap)*.6);min-width:0}
+.ds[data-card="filled"] .ds-card,.ds[data-card="filled"] .ds-bar{background:color-mix(in oklch,var(--ds-surface-2) var(--ds-card-a),transparent);border-color:transparent}
+.ds[data-card="elevated"] .ds-card,.ds[data-card="elevated"] .ds-bar{border-color:transparent}
+.ds[data-card="bare"] .ds-card{background:transparent;border-color:transparent;box-shadow:none;backdrop-filter:none;padding-inline:0}
+.ds-span2{grid-column:span 2}
+@media (max-width:640px){.ds-span2{grid-column:auto}}
+.ds.phone .ds-span2{grid-column:auto}
+.ds-eyebrow,.ds-field label{font-size:var(--ds-fs-label);color:var(--ds-muted);text-transform:var(--ds-label-tt);letter-spacing:var(--ds-label-ls);font-weight:var(--ds-label-w)}
+.ds h3,.ds h4{font-family:var(--ds-f-display);margin:0;line-height:var(--ds-lh-h);text-wrap:balance;font-weight:var(--ds-fw-d);letter-spacing:var(--ds-ls-d);font-style:var(--ds-fst-d);text-transform:var(--ds-h-tt)}
+.ds h3{font-size:var(--ds-fs-3)}
+.ds h4{font-size:var(--ds-fs-2)}
+.ds p{margin:0;color:var(--ds-muted)}
+.ds-big{font-size:var(--ds-fs-4);font-weight:var(--ds-fw-d);line-height:1;letter-spacing:var(--ds-ls-d)}
+.ds-big small{font-size:var(--ds-fs-1);font-weight:var(--ds-fw-b);letter-spacing:0}
+.ds-rowi{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:var(--ds-row-py) 0;border-top:var(--ds-bw-card) var(--ds-bstyle) var(--ds-border)}
+.ds-rowi:first-child{border-top:none}
+.ds-led{width:9px;height:9px;border-radius:50%;background:var(--ds-ok);color:var(--ds-ok);flex:none}
+.ds-led.warn{background:var(--ds-warn);color:var(--ds-warn)}.ds-led.bad{background:var(--ds-bad);color:var(--ds-bad);animation:pulse var(--ds-pulse) ease-in-out infinite}
+.ds[data-led="square"] .ds-led{border-radius:1px}
+.ds[data-led="bar"] .ds-led{width:4px;height:16px;border-radius:2px}
+.ds[data-led="ring"] .ds-led{background:transparent;border:2.5px solid currentColor;width:11px;height:11px}
+.ds[data-ledglow="on"] .ds-led{box-shadow:0 0 8px 1px currentColor}
+@keyframes pulse{50%{opacity:.45}}
+.ds-chip{display:inline-flex;align-items:center;gap:6px;font-size:var(--ds-fs-label);padding:2px 8px;border-radius:var(--ds-r-chip);border:var(--ds-bw-ctl) solid transparent;
+  text-transform:var(--ds-label-tt);letter-spacing:var(--ds-label-ls);font-weight:var(--ds-label-w);width:fit-content;--k:var(--ds-accent)}
+.ds-chip.ok{--k:var(--ds-ok)}.ds-chip.warn{--k:var(--ds-warn)}.ds-chip.bad{--k:var(--ds-bad)}
+.ds[data-chip="soft"] .ds-chip{background:color-mix(in oklch,var(--k) 20%,var(--ds-surface));color:color-mix(in oklch,var(--k) 55%,var(--ds-fg))}
+.ds[data-chip="outline"] .ds-chip{border-color:color-mix(in oklch,var(--k) 70%,var(--ds-fg));color:color-mix(in oklch,var(--k) 60%,var(--ds-fg))}
+.ds[data-chip="solid"] .ds-chip{background:var(--k);color:var(--ds-chip-on)}
+.ds[data-chip="dot"] .ds-chip{padding-inline:0;color:var(--ds-fg)}
+.ds[data-chip="dot"] .ds-chip::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--k)}
+.ds-btns{display:flex;flex-wrap:wrap;gap:8px}
+.ds-btn{font-family:var(--ds-f-body);font-size:var(--ds-fs-0);padding:var(--ds-ctl-py) var(--ds-ctl-px);border-radius:var(--ds-r-btn);cursor:pointer;
+  border:var(--ds-bw-ctl) solid var(--ds-border);background:var(--ds-surface-2);color:var(--ds-fg);font-weight:var(--ds-fw-s);
+  text-transform:var(--ds-label-tt);letter-spacing:var(--ds-label-ls);display:inline-flex;align-items:center;gap:6px}
+.ds-btn.pri{background:var(--ds-accent);color:var(--ds-on-accent);border-color:var(--ds-accent);box-shadow:var(--ds-shadow-btn)}
+.ds[data-btn="outline"] .ds-btn.pri{background:transparent;color:var(--ds-accent-ink);border-color:var(--ds-accent);box-shadow:none}
+.ds[data-btn="soft"] .ds-btn.pri{background:var(--ds-accent-soft);color:var(--ds-accent-ink);border-color:transparent;box-shadow:none}
+.ds[data-btn="inverted"] .ds-btn.pri{background:var(--ds-fg);color:var(--ds-bg);border-color:var(--ds-fg)}
+.ds-btn.ghost{background:transparent;border-color:transparent}
+.ds[data-hover="lift"] .ds-btn:hover{transform:translateY(calc(var(--ds-lift) * -1px))}
+.ds[data-hover="dim"] .ds-btn:hover{filter:brightness(.92)}
+.ds.isdark[data-hover="dim"] .ds-btn:hover{filter:brightness(1.18)}
+.ds[data-hover="ring"] .ds-btn:hover{box-shadow:0 0 0 3px var(--ds-accent-soft)}
+.ds-btn:hover{border-color:var(--ds-fg)}
+.ds-btn.pri:hover{border-color:var(--ds-accent)}
+.ds[data-press="scale"] .ds-btn:active{transform:scale(var(--ds-press))}
+.ds[data-press="sink"] .ds-btn:active{transform:translateY(2px);box-shadow:none}
+.ds-field{display:flex;flex-direction:column;gap:4px}
+.ds-input{font:inherit;color:var(--ds-fg);background:var(--ds-bg);border:var(--ds-bw-ctl) solid var(--ds-border);border-radius:var(--ds-r-input);padding:var(--ds-ctl-py) calc(var(--ds-ctl-px)*.75);width:100%;outline:none}
+.ds[data-input="filled"] .ds-input{background:var(--ds-surface-2);border-color:transparent}
+.ds[data-input="underline"] .ds-input{background:transparent;border-width:0 0 var(--ds-bw-ctl);border-radius:0;padding-inline:0;min-height:0;border-bottom-width:max(1px,var(--ds-bw-ctl))}
+.ds-focus:focus-visible,.ds-input:focus{outline:none}
+.ds[data-focus="glow"] .ds-focus:focus-visible,.ds[data-focus="glow"] .ds-input:focus{box-shadow:0 0 0 3px var(--ds-accent-soft);border-color:var(--ds-accent)}
+.ds[data-focus="solid"] .ds-focus:focus-visible,.ds[data-focus="solid"] .ds-input:focus{outline:2px solid var(--ds-accent);outline-offset:0}
+.ds[data-focus="offset"] .ds-focus:focus-visible,.ds[data-focus="offset"] .ds-input:focus{outline:2px solid var(--ds-accent);outline-offset:3px}
+.ds[data-focus="underline"] .ds-focus:focus-visible,.ds[data-focus="underline"] .ds-input:focus{box-shadow:inset 0 -3px 0 var(--ds-accent)}
+.ds-line{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.ds-switch{width:42px;height:24px;border-radius:var(--ds-r-chip);border:var(--ds-bw-ctl) solid var(--ds-border);background:var(--ds-surface-2);position:relative;cursor:pointer;padding:0;flex:none}
+.ds-switch::after{content:"";position:absolute;top:50%;left:3px;width:16px;height:16px;margin-top:-8px;border-radius:var(--ds-r-chip);background:var(--ds-muted);transition:transform var(--ds-dur) var(--ds-ease),background-color var(--ds-dur)}
+.ds[data-toggle="square"] .ds-switch,.ds[data-toggle="square"] .ds-switch::after{border-radius:var(--ds-r-btn)}
+.ds[data-toggle="slot"] .ds-switch::after{width:8px;height:14px;margin-top:-7px;border-radius:2px}
+.ds-switch[aria-checked="true"]{background:var(--ds-accent);border-color:var(--ds-accent)}
+.ds-switch[aria-checked="true"]::after{transform:translateX(17px);background:var(--ds-on-accent)}
+.ds[data-toggle="slot"] .ds-switch[aria-checked="true"]::after{transform:translateX(25px)}
+.ds-seg{display:inline-flex;border:var(--ds-bw-ctl) solid var(--ds-border);border-radius:var(--ds-r-btn);overflow:hidden;background:var(--ds-surface-2);width:fit-content}
+.ds-seg button{font:inherit;font-size:var(--ds-fs-label);border:0;background:transparent;color:var(--ds-muted);padding:5px 10px;cursor:pointer;text-transform:var(--ds-label-tt);letter-spacing:var(--ds-label-ls);font-weight:var(--ds-label-w)}
+.ds-seg button[aria-pressed="true"]{background:var(--ds-accent);color:var(--ds-on-accent)}
+.ds-spark{width:100%;height:56px;display:block}
+.ds-toast{display:flex;align-items:center;gap:10px;background:var(--ds-fg);color:var(--ds-bg);padding:var(--ds-ctl-py) var(--ds-ctl-px);border-radius:var(--ds-r-card);box-shadow:var(--ds-shadow)}
+.ds-alert{display:flex;gap:10px;align-items:flex-start;padding:var(--ds-ctl-py) var(--ds-ctl-px);border-radius:var(--ds-r-card);border:var(--ds-bw-card) var(--ds-bstyle) color-mix(in oklch,var(--ds-warn) 60%,var(--ds-border));background:color-mix(in oklch,var(--ds-warn) 14%,var(--ds-surface))}
+.ds-alert .ds-led{margin-top:.45em}
+.ds-meter{height:8px;border-radius:var(--ds-r-chip);background:var(--ds-surface-2);border:var(--ds-bw-ctl) solid var(--ds-border);overflow:hidden}
+.ds-meter i{display:block;height:100%;width:72%;background:var(--ds-accent)}
+.ds-meter i.b{width:38%;background:var(--ds-accent-2)}
+.ds-check{display:flex;align-items:center;gap:8px}
+.ds-check input{accent-color:var(--ds-accent);width:16px;height:16px;margin:0}
+.ds-check input:checked+span{color:var(--ds-muted);text-decoration:line-through}
+.ds input[type=range]{accent-color:var(--ds-accent);width:100%}
+.ds-ic{width:calc(20px*var(--ds-ic-scale));height:calc(20px*var(--ds-ic-scale));fill:none;stroke:currentColor;stroke-width:var(--ds-ic-sw);stroke-linecap:var(--ds-ic-cap);stroke-linejoin:var(--ds-ic-join);flex:none}
+.ds-icons{display:flex;flex-wrap:wrap;gap:6px}
+.ds-icons .ds-btn{padding:var(--ds-ctl-py)}
+.ds-spec{display:flex;flex-direction:column;gap:6px}
+.ds-spec .s4{font-family:var(--ds-f-display);font-size:var(--ds-fs-4);font-weight:var(--ds-fw-d);line-height:var(--ds-lh-h);letter-spacing:var(--ds-ls-d);font-style:var(--ds-fst-d)}
+.ds-spec .s2{font-family:var(--ds-f-display);font-size:var(--ds-fs-2);font-weight:var(--ds-fw-d);letter-spacing:var(--ds-ls-d);font-style:var(--ds-fst-d)}
+.ds-spec .s0{color:var(--ds-fg)}
+.ds-spec code{font-family:var(--ds-f-mono);font-size:var(--ds-fs-label);background:var(--ds-surface-2);padding:2px 6px;border-radius:var(--ds-r-btn);width:fit-content}
+.ds-pal{display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:6px}
+.ds-pal div{border-radius:var(--ds-r-btn);border:1px solid var(--ds-border);height:42px;display:flex;align-items:flex-end;padding:4px 6px;font-family:var(--ds-f-mono);font-size:10px}
+@media (prefers-reduced-motion:reduce){.ds,.ds *,.ds-switch::after{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>Token Forge</h1>
+  <p>Each group has simple knobs on top and a fine-tune drawer underneath. Anything you touch in fine-tune is pinned (amber dot); everything else keeps following the simple knobs. Hit auto to unpin.</p>
+</header>
+
+<div class="wrap">
+  <aside class="rail" id="rail" aria-label="Design tokens">
+    <div class="blk">
+      <h2>Start from</h2>
+      <div class="flex" id="presets"></div>
+      <div class="flex"><button class="btn" id="shuffle" type="button">Shuffle everything</button><button class="btn" id="clearpins" type="button">Unpin all</button></div>
+    </div>
+    <div class="blk">
+      <h2>Your systems</h2>
+      <div class="flex" style="flex-wrap:nowrap"><input type="text" id="savename" placeholder="Night shift"><button class="btn main" id="save" type="button">Save</button></div>
+      <div class="saves" id="saves"></div>
+    </div>
+    <div id="groups"></div>
+  </aside>
+
+  <div class="stagewrap">
+    <div class="stagebar">
+      <div class="seg" id="vw" style="grid-column:auto"><button type="button" data-v="wide" aria-pressed="true">Desktop width</button><button type="button" data-v="phone" aria-pressed="false">Phone width</button></div>
+      <span class="note" id="fontstatus"></span>
+    </div>
+    <main id="stage" class="ds" aria-label="Live preview">
+      <div class="ds-bar">
+        <span class="ds-logo">home</span>
+        <nav class="ds-nav" aria-label="Preview navigation">
+          <a href="#" aria-current="page" onclick="return false"><svg class="ds-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>Work</a>
+          <a href="#" onclick="return false">Me</a><a href="#" onclick="return false">Tools</a></nav>
+        <span class="ds-mono" style="color:var(--ds-muted);font-size:var(--ds-fs-label)">Mon 08:30</span>
+      </div>
+      <div class="ds-alert" role="note"><span class="ds-led warn"></span><span><strong style="font-weight:var(--ds-fw-s)">Heads up.</strong> Company site cert renews in 12 days.</span></div>
+      <div class="ds-grid">
+        <section class="ds-card ds-span2">
+          <span class="ds-eyebrow">Work · sample data</span>
+          <h3>Mostly fine. One queue needs you.</h3>
+          <p>11 of 12 checks passing as of 2 minutes ago.</p>
+          <div>
+            <div class="ds-rowi"><span class="ds-led"></span><span>Lambda · shipping-api</span><span class="ds-num">0 errors</span></div>
+            <div class="ds-rowi"><span class="ds-led"></span><span>Supabase</span><span class="ds-num">41 ms</span></div>
+            <div class="ds-rowi"><span class="ds-led bad"></span><span>SQS dead-letter queue</span><span class="ds-chip bad">3 msgs</span></div>
+            <div class="ds-rowi"><span class="ds-led warn"></span><span>SSL · company site</span><span class="ds-chip warn">12 days</span></div>
+            <div class="ds-rowi"><span class="ds-led"></span><span>Printavo API</span><span class="ds-chip ok">200 OK</span></div>
+          </div>
+        </section>
+        <section class="ds-card">
+          <span class="ds-eyebrow">Next bus</span>
+          <div class="ds-big ds-num">6<small> min</small></div>
+          <p>Then 18 min. Leave in 2.</p>
+          <span class="ds-chip">On time</span>
+        </section>
+        <section class="ds-card">
+          <span class="ds-eyebrow">Pressure</span>
+          <div class="ds-big ds-num">1009<small> hPa</small></div>
+          <svg class="ds-spark" viewBox="0 0 200 56" preserveAspectRatio="none" aria-hidden="true">
+            <line x1="0" y1="28" x2="200" y2="28" stroke="var(--ds-border)" stroke-width="1" stroke-dasharray="3 4" vector-effect="non-scaling-stroke"/>
+            <path d="M0 12 L25 13 L50 11 L75 15 L100 19 L125 26 L150 34 L175 41 L200 46 L200 56 L0 56 Z" fill="var(--ds-accent-soft)"/>
+            <polyline points="0,12 25,13 50,11 75,15 100,19 125,26 150,34 175,41 200,46" fill="none" stroke="var(--ds-accent)" stroke-width="2" vector-effect="non-scaling-stroke"/>
+          </svg>
+          <span class="ds-chip warn">−6 hPa in 6 h</span>
+        </section>
+        <section class="ds-card">
+          <span class="ds-eyebrow">Controls</span>
+          <div class="ds-btns">
+            <button class="ds-btn pri ds-focus" type="button">Retry queue</button>
+            <button class="ds-btn ds-focus" type="button">Details</button>
+            <button class="ds-btn ghost ds-focus" type="button">Snooze</button>
+          </div>
+          <div class="ds-field"><label for="dsq">Quick capture</label><input class="ds-input" id="dsq" placeholder="Card show Saturday, bring binder"></div>
+          <div class="ds-line"><button class="ds-switch ds-focus" id="dssw" type="button" role="switch" aria-checked="true" aria-label="Quiet hours"></button><span>Quiet hours</span></div>
+          <div class="ds-seg" id="dsseg"><button type="button" class="ds-focus" aria-pressed="true">Day</button><button type="button" class="ds-focus" aria-pressed="false">Week</button><button type="button" class="ds-focus" aria-pressed="false">Month</button></div>
+        </section>
+        <section class="ds-card">
+          <span class="ds-eyebrow">Today</span>
+          <label class="ds-check"><input type="checkbox" id="t1" checked><span>Drain the DLQ</span></label>
+          <label class="ds-check"><input type="checkbox" id="t2"><span>Push EAS build to preview</span></label>
+          <label class="ds-check"><input type="checkbox" id="t3"><span>Sleeve the new pulls</span></label>
+          <div class="ds-field"><label for="dsr">Volume</label><input type="range" id="dsr" value="60"></div>
+        </section>
+        <section class="ds-card">
+          <span class="ds-eyebrow">Storage</span>
+          <div class="ds-line" style="justify-content:space-between"><span>VPS disk</span><span class="ds-num">72%</span></div>
+          <div class="ds-meter"><i></i></div>
+          <div class="ds-line" style="justify-content:space-between"><span>Wasabi bucket</span><span class="ds-num">38%</span></div>
+          <div class="ds-meter"><i class="b"></i></div>
+          <div class="ds-icons" aria-label="Icon samples">
+            <button class="ds-btn ghost ds-focus" type="button" aria-label="Alerts"><svg class="ds-ic" viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/></svg></button>
+            <button class="ds-btn ghost ds-focus" type="button" aria-label="Transit"><svg class="ds-ic" viewBox="0 0 24 24"><path d="M6 3h12a2 2 0 0 1 2 2v12H4V5a2 2 0 0 1 2-2zM4 11h16M8 21v-4M16 21v-4"/></svg></button>
+            <button class="ds-btn ghost ds-focus" type="button" aria-label="Gauge"><svg class="ds-ic" viewBox="0 0 24 24"><path d="M4 17a8 8 0 1 1 16 0M12 17l4-5"/></svg></button>
+            <button class="ds-btn ghost ds-focus" type="button" aria-label="Cards"><svg class="ds-ic" viewBox="0 0 24 24"><path d="M3 6h18v12H3zM3 10h18M7 15h4"/></svg></button>
+            <button class="ds-btn ghost ds-focus" type="button" aria-label="Settings"><svg class="ds-ic" viewBox="0 0 24 24"><path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM12 2v4M12 18v4M2 12h4M18 12h4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg></button>
+          </div>
+        </section>
+        <section class="ds-card">
+          <span class="ds-eyebrow">Type</span>
+          <div class="ds-spec">
+            <span class="s4">Aa Gg 42</span>
+            <span class="s2">Flames at 7:00 pm</span>
+            <span class="s0">Body text sits here, comfortable and quiet, the way it should read on a phone at the bus stop.</span>
+            <code>GET /health 200 · 0O1lI</code>
+          </div>
+        </section>
+        <section class="ds-card ds-span2">
+          <span class="ds-eyebrow">Palette</span>
+          <div class="ds-pal" id="pal"></div>
+        </section>
+      </div>
+      <div class="ds-toast" role="status"><span class="ds-led"></span>Queue drained. Boring streak: 14 days.</div>
+    </main>
+
+    <section class="export" aria-label="Export">
+      <div class="flex" style="justify-content:space-between">
+        <div class="seg" id="fmt" style="grid-column:auto"><button type="button" data-f="css" aria-pressed="true">CSS</button><button type="button" data-f="tw" aria-pressed="false">Tailwind v4</button><button type="button" data-f="json" aria-pressed="false">JSON</button><button type="button" data-f="md" aria-pressed="false">Brief for Claude Code</button></div>
+        <div class="flex"><div class="seg" id="cfmt" style="grid-column:auto"><button type="button" data-v="oklch" aria-pressed="true">oklch</button><button type="button" data-v="hex" aria-pressed="false">hex</button></div><button class="btn main" id="copy" type="button">Copy</button></div>
+      </div>
+      <pre id="out" tabindex="0"></pre>
+      <details>
+        <summary class="note" style="cursor:pointer">Import a system (paste JSON exported from here)</summary>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px"><textarea id="imp" aria-label="Paste exported JSON"></textarea><div class="flex"><button class="btn" id="impgo" type="button">Load it</button><span class="note" id="impnote"></span></div></div>
+      </details>
+      <span class="note" id="note">Your current setup and saved systems are remembered in this browser.</span>
+    </section>
+  </div>
+</div>
+<script type="module" src="src/app.js"></script>
+</body>
+</html>
