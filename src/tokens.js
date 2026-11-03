@@ -1,8 +1,8 @@
 // The settings model: defaults, presets, and derive(S), which turns the knobs
 // (plus any pinned fine-tune overrides in S.o) into every concrete token value.
-import {r3,clamp,cs,hex2lch} from "./color.js";
+import {r3,clamp,cs,hex2lch,ratio} from "./color.js";
 
-export const BASE={mode:"light",depth:55,nh:240,nt:0.008,contrast:1,ah:195,ac:0.11,al:0.55,sc:0.14,
+export const BASE={mode:"light",depth:55,nh:240,nt:0.008,contrast:1,ah:195,ac:0.11,al:0.54,sc:0.14,
  fd:"Bricolage Grotesque",fb:"Atkinson Hyperlegible",fm:"JetBrains Mono",base:15,ratio:1.25,lab:"none",
  radius:10,bw:1,shadow:"soft",unit:8,dur:220,ease:"out",
  btn:"filled",card:"outline",input:"outline",chip:"soft",hover:"lift",pressS:"scale",focus:"glow",led:"dot",ledglow:"off",toggle:"pill",
@@ -15,7 +15,7 @@ export const PRESETS={
  "Brutalist":{depth:100,nh:0,nt:0,contrast:1.6,ah:100,ac:0.2,al:0.9,sc:0.2,fd:"Syne",fb:"IBM Plex Mono",fm:"IBM Plex Mono",base:14,ratio:1.414,lab:"upper",radius:0,bw:3,shadow:"hard",dur:90,ease:"steps",chip:"solid",hover:"none",pressS:"sink",focus:"offset",led:"square",toggle:"square",icSw:2.5,o:{fwD:800,lsD:-0.03,icCap:"square"}},
  "Mission control":{mode:"dark",depth:10,nh:245,nt:0.03,contrast:1.1,ah:215,ac:0.1,al:0.8,sc:0.12,fd:"Chakra Petch",fb:"IBM Plex Sans",fm:"IBM Plex Mono",base:14,ratio:1.2,lab:"upper",radius:3,shadow:"none",dur:240,btn:"outline",chip:"outline",hover:"ring",focus:"solid",led:"ring",ledglow:"on",pattern:"grid",icSw:1.25,o:{patOp:0.05,patSize:22,numF:"mono"}},
  "Glassy":{depth:60,nh:220,nt:0.02,ah:200,ac:0.14,al:0.62,fd:"Outfit",fb:"Figtree",fm:"DM Mono",radius:20,shadow:"glow",unit:9,dur:320,ease:"spring",card:"elevated",input:"filled",ledglow:"on",pattern:"dots",o:{glass:14,cardA:60,patOp:0.14,patSize:16,a2:-60}},
- "Zine":{depth:85,nh:60,nt:0.02,contrast:1.2,ah:20,ac:0.18,al:0.6,sc:0.16,fd:"Caveat",fb:"Space Mono",fm:"Space Mono",ratio:1.333,radius:4,bw:2,shadow:"hard",dur:120,ease:"steps",btn:"inverted",input:"underline",chip:"outline",hover:"none",pressS:"sink",focus:"underline",led:"square",toggle:"square",pattern:"diagonal",grain:0.1,icSw:2.25,o:{patOp:0.05,patSize:10,lhH:1}},
+ "Zine":{depth:85,nh:60,nt:0.02,contrast:1.2,ah:20,ac:0.18,al:0.58,sc:0.16,fd:"Caveat",fb:"Space Mono",fm:"Space Mono",ratio:1.333,radius:4,bw:2,shadow:"hard",dur:120,ease:"steps",btn:"inverted",input:"underline",chip:"outline",hover:"none",pressS:"sink",focus:"underline",led:"square",toggle:"square",pattern:"diagonal",grain:0.1,icSw:2.25,o:{patOp:0.05,patSize:10,lhH:1}},
  "Flames":{mode:"dark",depth:12,nh:20,nt:0.02,ah:27,ac:0.2,al:0.58,sc:0.17,fd:"Big Shoulders Display",fb:"Barlow",fm:"JetBrains Mono",ratio:1.3,lab:"upper",radius:4,dur:200,ease:"snappy",card:"filled",chip:"solid",focus:"solid",ledglow:"on",grain:0.04,icSw:2,o:{a2:55,fwD:800,lsD:0.01,hCase:"upper"}}
 };
 export const SH={none:{shX:0,shY:0,shBlur:0,shSpread:0,shOp:0,shHi:0,shTint:"neutral"},
@@ -48,12 +48,14 @@ export function derive(S){
  E.fsLabel=Math.round(S.base*E.labScale*10)/10;
  /* colours */
  const d=S.depth/100,k=S.contrast,N=l=>({l,c:S.nt,h:S.nh});let L;const C={};
- if(!dark){L=0.88+d*0.12;Object.assign(C,{bg:N(L),surface:N(L>0.99?1:clamp(L+0.025*k,0,1)),surface2:N(L>0.99?0.955:L-0.035*k),fg:N(0.2),muted:N(0.48),border:N(L-0.11*k)})}
- else{L=0.1+d*0.16;Object.assign(C,{bg:N(L),surface:N(L+0.04*k),surface2:N(L+0.08*k),fg:N(0.94),muted:N(0.7),border:N(L+0.13*k)})}
+ if(!dark){L=0.88+d*0.12;Object.assign(C,{bg:N(L),surface:N(L>0.99?1:clamp(L+0.025*k,0,1)),surface2:N(L>0.99?0.955:L-0.035*k),fg:N(0.2),muted:N(0.48),border:N(L-0.12*k)})}
+ else{L=0.1+d*0.16;Object.assign(C,{bg:N(L),surface:N(L+0.04*k),surface2:N(L+0.08*k),fg:N(0.94),muted:N(0.7),border:N(L+0.22*k)})}
  const ov=kk=>o["c_"+kk]?hex2lch(o["c_"+kk]):null;
  for(const kk of ["bg","surface","surface2","fg","muted","border"])C[kk]=ov(kk)||C[kk];
  C.accent=ov("accent")||{l:S.al,c:S.ac,h:S.ah};const A=C.accent;
- C.onAccent=ov("onAccent")||(A.l>0.68?{l:0.18,c:Math.min(A.c,0.05),h:A.h}:{l:0.99,c:0.005,h:A.h});
+ // Label goes dark or light, whichever reads better on this accent.
+ const ink={l:0.18,c:Math.min(A.c,0.05),h:A.h},paper={l:0.99,c:0.005,h:A.h};
+ C.onAccent=ov("onAccent")||(ratio(ink,A)>ratio(paper,A)?ink:paper);
  C.accentSoft=ov("accentSoft")||(dark?{l:0.3,c:A.c*0.45,h:A.h}:{l:0.93,c:A.c*0.35,h:A.h});
  C.accentInk=ov("accentInk")||(dark?{l:0.85,c:A.c*0.7,h:A.h}:{l:0.4,c:A.c*0.9,h:A.h});
  C.accent2=ov("accent2")||{l:A.l,c:A.c,h:(A.h+E.a2+360)%360};
