@@ -3,6 +3,7 @@ import {FONTS,CAT,stack} from "./fonts.js";
 import {r3,lch2rgb,rgb2hex,ratio,cs} from "./color.js";
 import {BASE,PRESETS,SH,EASE,CK,kebab,derive} from "./tokens.js";
 import {exportTokens} from "./export.js";
+import {GROUPS,FOLDS,CTL,keysUnder,pinCount} from "./controls.js";
 
 /* ---------- fonts ---------- */
 const FL={};
@@ -25,64 +26,6 @@ if(!S||typeof S!=="object")S=structuredClone(BASE);
 S={...structuredClone(BASE),...S};S.o=S.o||{};S.custom=S.custom||[];
 const setPreset=n=>{const p=structuredClone(PRESETS[n]);S={...structuredClone(BASE),...p,custom:S.custom,o:p.o||{}}};
 
-/* ---------- schema ---------- */
-const pct=v=>Math.round(v*100)+"%";
-const R=(k,l,min,max,step,f)=>({k,l,t:"range",min,max,step,f});
-const SG=(k,l,o)=>({k,l,t:"seg",o});
-const FT=(k,l)=>({k,l,t:"font"});
-const SUB=l=>({t:"sub",l});
-const px=v=>v+"px",deg=v=>Math.round(v)+"°",em=v=>(+v).toFixed(3)+"em",x2=v=>(+v).toFixed(2),ms=v=>v+"ms";
-
-const GROUPS=[
- {id:"colour",title:"Colour",open:true,simple:[
-   SG("mode","Mode",[["light","Light"],["dark","Dark"]]),
-   R("depth","Background depth",0,100,1,v=>v+"%"),R("nh","Neutral hue",0,360,1,deg),R("nt","Neutral tint",0,0.05,0.001,v=>(+v).toFixed(3)),
-   R("contrast","Layer contrast",0.4,2,0.05,v=>x2(v)+"×"),R("ah","Accent hue",0,360,1,deg),R("ac","Accent chroma",0,0.25,0.005,v=>(+v).toFixed(3)),
-   R("al","Accent lightness",0.35,0.92,0.01,x2),R("sc","Status saturation",0.03,0.22,0.005,v=>(+v).toFixed(3))],
-  adv:[SUB("Hues"),R("okH","OK hue",0,360,1,deg),R("warnH","Warning hue",0,360,1,deg),R("badH","Problem hue",0,360,1,deg),R("a2","Second accent offset",-180,180,1,deg),
-   SUB("Every colour, individually"),{t:"colors"},SUB("Readability"),{t:"contrast"}]},
- {id:"type",title:"Typography",simple:[
-   FT("fd","Display face"),FT("fb","Body face"),FT("fm","Mono face"),
-   R("base","Base size",12,20,0.5,px),R("ratio","Scale ratio",1.067,1.618,0.001,v=>(+v).toFixed(3)),
-   SG("lab","Labels",[["none","Sentence case"],["upper","Uppercase"]])],
-  adv:[SUB("Load any Google font"),{t:"customfont"},
-   SUB("Display"),R("fwD","Weight",100,900,100),R("lsD","Letter spacing",-0.08,0.2,0.005,em),R("lhH","Line height",0.8,1.6,0.01,x2),
-   SG("dItal","Style",[["normal","Upright"],["italic","Italic"]]),SG("hCase","Heading case",[["none","As written"],["upper","Upper"],["lowercase","Lower"]]),
-   SUB("Body"),R("fwB","Weight",100,900,100),R("fwS","Strong and button weight",100,900,100),R("lsB","Letter spacing",-0.04,0.1,0.005,em),R("lhB","Line height",1,2.1,0.05,x2),
-   SUB("Labels and numbers"),R("labScale","Label size",0.6,1.2,0.01,v=>Math.round(v*100)+"% of body"),R("labLs","Label tracking",-0.02,0.3,0.005,em),R("labW","Label weight",100,900,100),
-   SG("numF","Big numbers use",[["display","Display face"],["body","Body face"],["mono","Mono face"]])]},
- {id:"shape",title:"Shape",simple:[
-   R("radius","Corner radius",0,28,1,px),R("bw","Border weight",0,4,0.5,px),
-   SG("shadow","Shadow",[["none","Flat"],["soft","Soft"],["hard","Hard offset"],["press","Pressed metal"],["glow","Glow"]])],
-  adv:[SUB("Radius per part"),R("rCard","Cards",0,40,1,px),R("rBtn","Buttons",0,40,1,v=>v>=40?"pill":px(v)),R("rInput","Inputs",0,40,1,v=>v>=40?"pill":px(v)),R("rChip","Chips and toggles",0,40,1,v=>v>=40?"pill":px(v)),
-   SUB("Borders"),R("bwCard","Card border",0,6,0.5,px),R("bwCtl","Control border",0,6,0.5,px),SG("bStyle","Card border style",[["solid","Solid"],["dashed","Dashed"],["dotted","Dotted"],["double","Double"]]),
-   SUB("Shadow, exactly"),R("shX","Offset x",-16,16,1,px),R("shY","Offset y",-16,24,1,px),R("shBlur","Blur",0,64,1,px),R("shSpread","Spread",-16,16,1,px),
-   R("shOp","Strength",0,1,0.01,pct),R("shHi","Top highlight",0,1,0.05,pct),SG("shTint","Shadow colour",[["neutral","Neutral"],["accent","Accent"],["ink","Text colour"]])]},
- {id:"space",title:"Space and density",simple:[R("unit","Spacing unit",4,14,1,px)],
-  adv:[R("pad","Card padding",4,48,1,px),R("gap","Gap between things",2,40,1,px),R("ctlPy","Control padding, vertical",2,20,1,px),R("ctlPx","Control padding, horizontal",4,32,1,px),R("rowPy","List row padding",0,20,1,px)]},
- {id:"comp",title:"Components",simple:[
-   SG("btn","Primary button",[["filled","Filled"],["outline","Outline"],["soft","Soft"],["inverted","Inverted"]]),
-   SG("card","Cards",[["outline","Outlined"],["filled","Filled"],["elevated","Shadow only"],["bare","Bare"]]),
-   SG("input","Inputs",[["outline","Outlined"],["filled","Filled"],["underline","Underline"]]),
-   SG("chip","Chips",[["soft","Soft"],["outline","Outline"],["solid","Solid"],["dot","Dot"]])],
-  adv:[SG("hover","Button hover",[["none","Nothing"],["lift","Lift"],["dim","Dim"],["ring","Ring"]]),
-   SG("pressS","Button press",[["none","Nothing"],["scale","Squish"],["sink","Sink"]]),
-   SG("focus","Focus ring",[["glow","Glow"],["solid","Solid"],["offset","Offset"],["underline","Underline"]]),
-   SG("led","Status lights",[["dot","Dot"],["square","Square"],["bar","Bar"],["ring","Ring"]]),
-   SG("ledglow","Light glow",[["off","Off"],["on","On"]]),
-   SG("toggle","Toggle",[["pill","Pill"],["square","Square"],["slot","Slot"]])]},
- {id:"tex",title:"Texture and depth",simple:[
-   SG("pattern","Background pattern",[["none","None"],["grid","Grid"],["dots","Dots"],["lines","Lines"],["diagonal","Diagonal"]]),
-   R("grain","Film grain",0,0.25,0.01,pct)],
-  adv:[R("patSize","Pattern size",2,48,1,px),R("patOp","Pattern strength",0,0.3,0.005,pct),R("glass","Card blur (glass)",0,30,1,px),R("cardA","Card opacity",20,100,1,v=>v+"%")]},
- {id:"icons",title:"Icons",simple:[R("icSw","Stroke width",0.75,3,0.25,px)],
-  adv:[SG("icCap","Line ends",[["round","Round"],["square","Square"],["butt","Flat"]]),R("icScale","Size",0.7,1.5,0.05,v=>Math.round(v*100)+"%")]},
- {id:"motion",title:"Motion",simple:[R("dur","Duration",0,800,10,ms),
-   SG("ease","Easing",[["spring","Springy"],["out","Smooth"],["snappy","Snappy"],["linear","Linear"],["steps","Stepped"]])],
-  adv:[SUB("Custom curve (ignored when stepped)"),R("bz1","x1",0,1,0.01,x2),R("bz2","y1",-1,2,0.01,x2),R("bz3","x2",0,1,0.01,x2),R("bz4","y2",-1,2,0.01,x2),
-   R("stepsN","Steps when stepped",2,10,1),R("lift","Hover lift",0,8,0.5,px),R("press","Press squish",0.85,1,0.01,v=>Math.round(v*100)+"%"),R("pulse","Alert pulse speed",0.4,4,0.1,v=>(+v).toFixed(1)+"s")]}
-];
-const ADVKEYS={};GROUPS.forEach(g=>{ADVKEYS[g.id]=[];g.adv.forEach(c=>c.k&&ADVKEYS[g.id].push(c.k));if(g.id==="colour")CK.forEach(([k])=>ADVKEYS.colour.push("c_"+k))});
 
 /* ---------- build controls ---------- */
 const groupsEl=document.getElementById("groups");
@@ -91,9 +34,11 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"
 function fontOptions(){let h="";if(S.custom.length)h+=`<optgroup label="Custom">${S.custom.map(f=>`<option value="${esc(f)}">${esc(f)}</option>`).join("")}</optgroup>`;
  for(const[c,l]of Object.entries(FONTS))h+=`<optgroup label="${c}">${l.map(f=>`<option value="${f}">${f}</option>`).join("")}</optgroup>`;return h}
 const allFonts=()=>[...S.custom,...Object.values(FONTS).flat()];
-function ctlHTML(c,adv){
- if(c.t==="sub")return `<div class="sub">${c.l}</div>`;
- if(c.t==="colors")return `<div class="cgrid">${CK.map(([k,l])=>`<label class="cw" data-cw="${k}"><input type="color" data-ck="${k}" aria-label="${l}"><span>${l}</span><button type="button" class="rst" data-rst="c_${k}" hidden>auto</button></label>`).join("")}</div>`;
+// One fold pattern at every depth: a pin count, an Unpin for everything inside, then its children.
+function foldHTML(n,path){return `<details class="fold"${n.open?" open":""}><summary>${n.l}<span class="pins" data-pins="${path}"></span><button type="button" class="btn sm clr" data-clr="${path}" hidden>Unpin</button></summary><div class="fbody">${n.c.map(c=>ctlHTML(c,true,path)).join("")}</div></details>`}
+function ctlHTML(c,adv,path){
+ if(c.t==="fold")return foldHTML(c,path+"."+c.id);
+ if(c.t==="colors")return `<div class="cgrid">${CK.filter(([k])=>c.ks.includes(k)).map(([k,l])=>`<label class="cw" data-cw="${k}"><input type="color" data-ck="${k}" aria-label="${l}"><span>${l}</span><button type="button" class="rst" data-rst="c_${k}" hidden>auto</button></label>`).join("")}</div>`;
  if(c.t==="contrast")return `<div class="chk" id="chk"></div>`;
  if(c.t==="customfont")return `<div class="flex" style="flex-wrap:nowrap"><input type="text" id="cfont" placeholder="Rethink Sans" aria-label="Google font family name"><button class="btn" id="cfontgo" type="button">Load</button></div><span class="note" id="cfnote">Type the exact family name from fonts.google.com. It joins every font picker under Custom.</span>`;
  const id="k_"+c.k,lab=c.t==="seg"?`<span class="lbl">${c.l}</span>`:`<label for="${id}">${c.l}</label>`;
@@ -103,11 +48,10 @@ function ctlHTML(c,adv){
  else if(c.t==="font")ctrl=`<div class="fontpick"><button class="btn sm" type="button" data-cycle="-1" data-for="${c.k}" aria-label="Previous font">‹</button><select id="${id}" data-k="${c.k}" data-adv="0" data-font>${fontOptions()}</select><button class="btn sm" type="button" data-cycle="1" data-for="${c.k}" aria-label="Next font">›</button></div>`;
  return `<div class="row" data-row="${c.k}">${lab}<span class="rv"><output id="o_${c.k}"></output>${adv?`<button type="button" class="rst" data-rst="${c.k}" hidden>auto</button>`:""}</span>${ctrl}</div>`;
 }
-groupsEl.innerHTML=GROUPS.map(g=>`<details class="grp" data-g="${g.id}"${g.open?" open":""}><summary>${g.title}<span class="pins" id="pins_${g.id}"></span></summary><div class="gbody">
+groupsEl.innerHTML=GROUPS.map(g=>`<details class="grp" data-g="${g.id}"${g.open?" open":""}><summary>${g.title}<span class="pins" data-pins="${g.id}"></span></summary><div class="gbody">
  ${g.simple.map(c=>ctlHTML(c,false)).join("")}
- <details class="fine"><summary>Fine-tune<button type="button" class="btn sm clr" data-clr="${g.id}">Unpin group</button></summary><div class="fbody">${g.adv.map(c=>ctlHTML(c,true)).join("")}</div></details>
+ ${foldHTML(FOLDS[g.id],g.id)}
 </div></details>`).join("");
-const CTL={};GROUPS.forEach(g=>[...g.simple,...g.adv].forEach(c=>c.k&&(CTL[c.k]=c)));
 function refreshFontSelects(){document.querySelectorAll("select[data-font]").forEach(s=>{const v=S[s.dataset.k];s.innerHTML=fontOptions();s.value=v})}
 
 /* ---------- apply ---------- */
@@ -156,7 +100,7 @@ function sync(){
   const row=el.closest(".row");if(row&&adv){const pinned=k in S.o;row.classList.toggle("pinned",pinned);const rb=row.querySelector(".rst");if(rb)rb.hidden=!pinned}});
  CK.forEach(([k])=>{const inp=document.querySelector(`[data-ck="${k}"]`);if(!inp)return;const hx=rgb2hex(lch2rgb(E.C[k]));if(inp.value!==hx)inp.value=hx;
   const pinned=("c_"+k) in S.o;inp.closest(".cw").classList.toggle("pinned",pinned);inp.parentNode.querySelector(".rst").hidden=!pinned});
- GROUPS.forEach(g=>{const n=ADVKEYS[g.id].filter(k=>k in S.o).length;document.getElementById("pins_"+g.id).textContent=n?n+" pinned":""});
+ document.querySelectorAll("[data-pins]").forEach(el=>{const n=pinCount(FOLDS[el.dataset.pins],S.o);el.textContent=n?n+" pinned":"";const b=el.parentNode.querySelector(":scope>[data-clr]");if(b)b.hidden=!n});
  const C=E.C,pairs=[["Text on page",C.fg,C.bg,4.5],["Muted on card",C.muted,C.surface,4.5],["Button label",C.onAccent,C.accent,4.5],["Accent text on tint",C.accentInk,C.accentSoft,4.5],["Border vs card",C.border,C.surface,1.5]];
  const ch=document.getElementById("chk");if(ch)ch.innerHTML=pairs.map(([l,a,b,min])=>{const v=ratio(a,b);return `<span>${l}</span><b class="${v>=min?"pass":"fail"}">${v.toFixed(2)}:1 ${v>=min?"ok":"low"}</b>`}).join("");
 }
@@ -169,7 +113,7 @@ rail.addEventListener("input",e=>{const el=e.target;
  if(adv)S.o[k]=v;else S[k]=v;apply()});
 rail.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
  if(b.dataset.rst){e.preventDefault();delete S.o[b.dataset.rst];apply();return}
- if(b.dataset.clr){e.preventDefault();ADVKEYS[b.dataset.clr].forEach(k=>delete S.o[k]);apply();return}
+ if(b.dataset.clr){e.preventDefault();keysUnder(FOLDS[b.dataset.clr]).forEach(k=>delete S.o[k]);apply();return}
  if(b.dataset.cycle){const k=b.dataset.for,l=allFonts(),i=l.indexOf(S[k]);S[k]=l[(i+ +b.dataset.cycle+l.length)%l.length];apply();return}
  const seg=b.closest(".seg[data-k]");if(seg){const k=seg.dataset.k;if(seg.dataset.adv==="1")S.o[k]=b.dataset.v;else S[k]=b.dataset.v;apply()}});
 document.getElementById("presets").innerHTML=Object.keys(PRESETS).map(p=>`<button class="btn" type="button" data-p="${p}">${p}</button>`).join("");

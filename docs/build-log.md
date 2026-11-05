@@ -94,3 +94,21 @@ pinned hex comes back out unchanged, which is the actual promise.
   having the thresholds loosened.
 - CI runs the tests on Node 22 and 24.
 - GitHub Pages serves `main` directly, since there is nothing to build.
+
+## Recursive folds
+
+The rail had two levels: simple knobs and one Fine-tune drawer. The design is
+meant to work like clay, rough shapes first and detail only where you want it,
+so depth needs to be available without being imposed.
+
+The control schema moved out of `app.js` into `src/controls.js`, because a schema
+inside the DOM code couldn't be tested. It's now a tree with one repeating unit,
+the fold, so pin counts and Unpin work the same at every level. Pin keys didn't
+change, so saved systems and old exports load as they did, with their pins
+showing up in the new folds.
+
+Checked in a real browser: pinning three levels down raises the count on every
+fold above it, unpinning an inner fold leaves its siblings alone, and pins
+survive a reload. `offsetParent` reports rows in closed `<details>` as visible,
+so a check built on it gave a false alarm. `checkVisibility()` gave the real
+answer: no fine rows showing at the start.

@@ -9,9 +9,11 @@ brief you can hand to an AI coding assistant.
 
 ![Token Forge: a control rail on the left with presets and colour sliders, and a sample dashboard on the right styled by the current tokens](docs/screenshot.png)
 
-- **Simple knobs, then fine-tune.** Each group has a few broad controls with a
-  drawer of precise values under them. Anything you touch in the drawer is
-  *pinned* and stops following the broad knobs. Everything else keeps following.
+- **Works like clay.** Start with a few broad controls per group, then open
+  nested folds to work inward as far as you want. Anything you touch in a fold is
+  *pinned* and stops following the broad knobs, while everything else keeps
+  following. Closed folds show how many pins are inside, and any fold can be
+  unpinned to smooth it back.
 - **Colour in OKLCH.** Palettes are built in a perceptual colour space, so a
   lightness or hue change behaves the way it looks. Any colour can be pinned to
   an exact hex.
@@ -31,10 +33,11 @@ No dependencies and no build step: plain browser JavaScript modules.
 |---|---|
 | `src/color.js` | OKLCH ↔ sRGB conversion, gamut clamping, WCAG contrast. Pure functions |
 | `src/tokens.js` | Defaults, presets, and `derive(state)`, which turns knobs plus pins into every token value |
+| `src/controls.js` | The control tree: simple knobs, then folds nested to any depth, with pin counting for any subtree |
 | `src/export.js` | CSS / Tailwind v4 / JSON / Markdown output |
 | `src/fonts.js` | The Google Fonts catalogue and fallback stacks |
 | `src/app.js` | Everything that touches the DOM or `localStorage` |
-| `test/` | 27 tests with `node:test`, covering colour maths, derivation, every preset's contrast, and the exports |
+| `test/` | 39 tests with `node:test`, covering colour maths, derivation, every preset's contrast, the exports, and the control tree |
 
 Everything except `app.js` is free of DOM code, which is what lets the
 colour and token logic be tested directly in Node.

@@ -48,11 +48,15 @@ details.grp>summary::before{content:"";width:7px;height:7px;border-right:1.5px s
 details.grp[open]>summary::before{transform:rotate(45deg)}
 .pins{margin-left:auto;font-size:11px;font-weight:700;color:var(--c-pin);font-family:var(--f-code)}
 .gbody{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px}
-details.fine{border:1px dashed var(--c-line);border-radius:10px}
-details.fine>summary{cursor:pointer;padding:7px 10px;font-size:12px;color:var(--c-muted);display:flex;align-items:center;gap:8px}
-details.fine>summary .clr{margin-left:auto}
-details.fine .fbody{padding:4px 10px 10px;display:flex;flex-direction:column;gap:10px}
-.sub{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--c-muted);margin-top:4px;font-weight:700}
+details.fold{border:1px dashed var(--c-line);border-radius:10px}
+details.fold>summary{cursor:pointer;padding:7px 10px;font-size:12px;color:var(--c-muted);display:flex;align-items:center;gap:8px}
+details.fold>summary .clr{margin-left:6px}
+details.fold>summary{list-style:none}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary::before{content:"";flex:none;width:6px;height:6px;border-right:1.5px solid var(--c-muted);border-bottom:1.5px solid var(--c-muted);transform:rotate(-45deg);transition:transform .15s}
+details.fold[open]>summary::before{transform:rotate(45deg)}
+details.fold>.fbody{padding:4px 10px 10px;display:flex;flex-direction:column;gap:10px}
+details.fold .fold>.fbody{padding:4px 6px 8px}
 .row{display:grid;grid-template-columns:1fr auto;gap:3px 8px;align-items:center}
 .row>label,.row>.lbl{font-size:13px}
 .rv{display:flex;align-items:center;gap:6px}
@@ -203,7 +207,7 @@ textarea{font-family:var(--f-code);font-size:11.5px;min-height:90px;resize:verti
 <body>
 <header class="top">
   <h1>Token Forge</h1>
-  <p>Each group has simple knobs on top and a fine-tune drawer underneath. Anything you touch in fine-tune is pinned (amber dot); everything else keeps following the simple knobs. Hit auto to unpin.</p>
+  <p>Start rough with the simple knobs on top, then open folds to work inward as far as you like. Anything you touch in a fold is pinned (amber dot); everything else keeps following. Closed folds show how many pins are inside. Hit auto or Unpin to smooth it back.</p>
 </header>
 
 <div class="wrap">
