@@ -53,14 +53,18 @@ from memory:
 - **statline's own tokens:** `rink-*` and `series-1/2/3` stay statline's —
   domain/chart-level, not theme tokens. Confirmed.
 
-## What Token Forge still owes (format v1)
+## Format v1 — shipped 2026-11-21
 
-The module targets token-set **v1**; today's export is **v0**. Token Forge owes,
-before any consumer pins v1:
+The JSON export now declares token-set **v1** (`$version: "1.0"`), so it is
+pinnable. `test/export.test.js` holds the guarantees:
 
-- [ ] emit `$version` (`"<major>.<minor>"`) — the field a consumer pins
-- [ ] type every leaf (`$type` on `radius`, `font`, `shadow`, `motion`, not
-      only `size`)
-- [ ] promise key order
+- [x] emit `$version` (`"<major>.<minor>"`) — the field a consumer pins
+- [x] type every leaf — `$type` first, then `$value`; `color`, `fontFamily`,
+      `dimension`, `shadow`, `duration`, `cubicBezier`, `string`
+- [x] promise key order — top level `$version, $description, mode, color, font,
+      size, radius, shadow, motion, components, $forge`; each namespace in its
+      vocabulary order. One quirk: JS enumerates integer-like keys first, so
+      `size` comes out `0,1,2,3,4,-1`; that order is what the test pins.
 
-Tracked in [roadmap.md](roadmap.md), Phase 0.
+The Contract level (the `tokens` module's `validate` over all nine presets)
+passes 9/9. See [roadmap.md](roadmap.md), Phase 0.

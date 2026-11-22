@@ -12,12 +12,11 @@ the module makes it a contract.
 
 ## Phases
 
-**Phase 0 — emit format v1 (next; Token Forge's own work).**
-The module shipped targeting token-set **v1**, but the export is still **v0**.
-Token Forge owes: emit `$version` (`"<major>.<minor>"`); type every leaf
-(`$type` on `radius`/`font`/`shadow`/`motion`, not only `size`); promise key
-order. *No change to what the app looks like* — only to what it guarantees.
-→ an export a consumer can pin. Unblocks statline.
+**Phase 0 — emit format v1. ✅ done 2026-11-21.**
+The JSON export now emits `$version: "1.0"`, types every leaf, and promises key
+order — 44 tests green, and the Contract level (the `tokens` module's `validate`
+over all nine presets) passes 9/9. An export a consumer can pin. See
+`docs/token-set.md`.
 
 *Open for suite:* statline asked for a second border level and a second muted
 level (it maps `line`/`line-2` from one `border`, `ink-2`/`ink-3` from one
