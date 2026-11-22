@@ -44,11 +44,11 @@ with hashes, the `tokens` module naming a set without fetching it. "The visual
 language" becomes a library you can point at.
 
 **Phase 4 — more exports from one set. 🔎 designed.**
-Figma variables, iOS/Android, plain DTCG — all derived from the one token set
+Figma variables, iOS/Android, token-set JSON — all derived from the one token set
 `derive()` already produces. Design in [export-formats.md](export-formats.md):
-plain DTCG as the base, then Figma as a constrained projection (Figma imports
-DTCG directly), then iOS, then Android. A format that cannot carry a token omits
-it rather than approximating it.
+token-set JSON (DTCG-compatible) as the base, then Figma as a constrained
+projection (Figma imports DTCG directly), then iOS, then Android. A format that
+cannot carry a token omits it rather than approximating it.
 
 ## Ownership
 

@@ -57,15 +57,19 @@ https://suchlandtsirenity.github.io/token-forge/sets/clay/latest.json  convenien
       "mode": "light",
       "description": "Warm neutral studio default",
       "url": "sets/clay/1.0.json",
-      "sha256": "<hash of the file>",
+      "sha256": "<hash of the canonical token set>",
       "published": "2026-11-21"
     }
   ]
 }
 ```
 
-- `sha256` lets a consumer verify the file it fetched is the one the manifest
-  names — useful when a set is copied out of Pages.
+- `sha256` is over a **canonical form**, not the file bytes. `$forge` is
+  semantically stable but its key order follows the order the user pinned
+  things, so two exports of the same system differ byte-for-byte. Hash the
+  **parsed token set** (the module's `parse()` output, keys in vocabulary order)
+  instead, so `clay@1` means one thing no matter who exported it. A consumer
+  verifies by parsing the fetched file and hashing the same way.
 - `url` is relative to the manifest's directory, so the manifest works from a
   fork or a local checkout as well as Pages.
 - The manifest lists **every published version**, not only the newest. A

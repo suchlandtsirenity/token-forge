@@ -4,17 +4,19 @@
 `derive()` result; none may invent a value. A format that cannot carry a token
 says so and omits it — it does not approximate it.
 
-## The base: plain DTCG
+## The base: token-set JSON (DTCG-compatible)
 
 The JSON export is already DTCG-shaped, but it carries two things DTCG does not
 define (`$description`, `$forge`) and two value shapes DTCG does not use
-(`"16px"` strings, `oklch()` strings). **Plain DTCG** is the interchange file:
+(`"16px"` strings, `oklch()` strings). **The base export is "token-set JSON
+(DTCG-compatible)"** — the format is ours (token-set v1), DTCG is the
+compatibility target. It is the interchange file:
 
 - drop `$description` and `$forge`;
 - keep `$version`, `mode`, and every namespace;
 - convert values to DTCG-native shapes (below).
 
-Everything else in this document is a projection of that file. Build plain DTCG
+Everything else in this document is a projection of that file. Build the base
 first; the platform formats are constraints on top of it.
 
 ### Value conversion (one place, not per format)
@@ -53,9 +55,9 @@ composite type. So the Figma projection **omits** `shadow.*` and
 `motion.easing`; it keeps `motion.duration`. Nested names normalise to slashes
 (`color.accent` → `color/accent`), and duplicate names keep the first.
 
-**Verdict:** "Figma export" is plain DTCG + these five constraints. It is a
-filter, not a converter. The honest limit: a Figma user gets colours, sizes,
-radii, fonts, durations and string enums — not shadows or easing curves.
+**Verdict:** "Figma export" is the base token-set JSON + these five constraints.
+It is a filter, not a converter. The honest limit: a Figma user gets colours,
+sizes, radii, fonts, durations and string enums — not shadows or easing curves.
 
 ## iOS
 
@@ -102,7 +104,7 @@ legacy path. Same input rule as iOS: one set or a pair, the exporter merges.
 
 ## Order of work
 
-1. **Plain DTCG** — the base; also the Figma file.
+1. **The base (token-set JSON, DTCG-compatible)** — also the Figma file.
 2. **Figma** — a constrained projection of #1; cheapest real consumer.
 3. **iOS** — asset catalog + Swift; needs the light/dark pair decision.
 4. **Android** — Compose first, XML second.
@@ -117,9 +119,11 @@ legacy path. Same input rule as iOS: one set or a pair, the exporter merges.
    projection drops `shadow.*` and `motion.easing` rather than carrying them as
    strings — a string shadow is not a shadow, and a silent approximation is
    worse than a stated omission. The export's own README names what it omits.
-3. **Plain DTCG name.** Call the file format "DTCG" or "token-set JSON"? The
-   module already calls the format "token set"; DTCG is the wire shape. I lean
-   "token-set JSON, DTCG-compatible" so the name stays ours.
+3. ~~**Plain DTCG name.**~~ **Decided 2026-11-21: "token-set JSON
+   (DTCG-compatible)".** The format is ours (token-set v1); DTCG is a
+   compatibility target, not our identity. Calling it "DTCG" would make every
+   difference (`$forge`, `$version`, our key names) read as a defect;
+   "compatible" claims exactly what is true — the leaves read as DTCG.
 
 ## Deliberately not doing
 
