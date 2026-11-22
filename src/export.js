@@ -28,13 +28,13 @@ export function exportTokens(S,E,FMT,CF,FL={}){const C=E.C,c=k=>cs(C[k],CF),rad=
   s+=`  --tracking-display: ${E.lsD}em;\n  --leading-body: ${E.lhB};\n\n  --radius-card: ${E.rCard}px;\n  --radius-button: ${rad(E.rBtn)};\n  --radius-input: ${rad(E.rInput)};\n  --radius-chip: ${rad(E.rChip)};\n`;
   s+=`  --spacing: ${S.unit/2}px;\n  --shadow-card: ${E.shadow};\n  --shadow-button: ${E.shadowBtn};\n  --ease-brand: ${E.easing};\n  --default-transition-duration: ${S.dur}ms;\n  --default-transition-timing-function: ${E.easing};\n}\n\n/* ${comp} */`;
  }else if(FMT==="json"){
-  const col={};CK.forEach(([k])=>col[kebab(k)]={$type:"color",$value:c(k)});
-  s=JSON.stringify({$description:"Made in Token Forge",mode:S.mode,color:col,
-   font:{display:{$value:stack(S.fd)},body:{$value:stack(S.fb)},mono:{$value:stack(S.fm)}},
-   size:Object.fromEntries([-1,0,1,2,3,4].map(i=>[String(i),{$type:"dimension",$value:E.fs[i]+"px"}])),
-   radius:{card:{$value:E.rCard+"px"},button:{$value:rad(E.rBtn)},input:{$value:rad(E.rInput)},chip:{$value:rad(E.rChip)}},
-   shadow:{card:{$value:E.shadow},button:{$value:E.shadowBtn}},motion:{duration:{$value:S.dur+"ms"},easing:{$value:E.easing}},
-   components:{button:S.btn,hover:E.hover,press:E.pressS,card:S.card,input:S.input,chip:S.chip,focus:E.focus,lights:E.led,lightGlow:E.ledglow,toggle:E.toggle},
+  const L=(t,v)=>({$type:t,$value:v}),col={};CK.forEach(([k])=>col[kebab(k)]=L("color",c(k)));
+  s=JSON.stringify({$version:"1.0",$description:"Made in Token Forge",mode:S.mode,color:col,
+   font:{display:L("fontFamily",stack(S.fd)),body:L("fontFamily",stack(S.fb)),mono:L("fontFamily",stack(S.fm))},
+   size:Object.fromEntries([-1,0,1,2,3,4].map(i=>[String(i),L("dimension",E.fs[i]+"px")])),
+   radius:{card:L("dimension",E.rCard+"px"),button:L("dimension",rad(E.rBtn)),input:L("dimension",rad(E.rInput)),chip:L("dimension",rad(E.rChip))},
+   shadow:{card:L("shadow",E.shadow),button:L("shadow",E.shadowBtn)},motion:{duration:L("duration",S.dur+"ms"),easing:L("cubicBezier",E.easing)},
+   components:{button:L("string",S.btn),hover:L("string",E.hover),press:L("string",E.pressS),card:L("string",S.card),input:L("string",S.input),chip:L("string",S.chip),focus:L("string",E.focus),lights:L("string",E.led),lightGlow:L("string",E.ledglow),toggle:L("string",E.toggle)},
    $forge:S},null,2);
  }else{
   s=`# Design system\n\nUse these tokens for every screen. Do not fall back to library defaults (Inter, Lucide defaults, gray-200 borders, rounded-xl cards).\nThe full token list lives in tokens.css; this is the intent behind it.\n\n## Feel\n- Mode: ${S.mode} first. Background depth ${S.depth}%, neutrals tinted toward hue ${S.nh}°.\n- Accent: ${c("accent")} (text on it: ${c("onAccent")}). Second accent for charts: ${c("accent2")}.\n- Status: ok ${c("ok")}, warning ${c("warn")}, problem ${c("bad")}. Quiet when fine, loud only when broken.\n\n## Type\n- Display: ${S.fd}, weight ${E.fwD}${E.dItal==="italic"?", italic":""}${E.hCase!=="none"?", "+E.hCase+" headings":""}, tracking ${E.lsD}em.\n- Body: ${S.fb}, weight ${E.fwB}, line height ${E.lhB}. Base ${S.base}px, scale ratio ${S.ratio}.\n- Mono: ${S.fm}. Big numbers use the ${E.numF} face with tabular figures.\n- Labels: ${S.lab==="upper"?"uppercase":"sentence case"}, ${E.fsLabel}px, tracking ${E.labLs}em, weight ${E.labW}.\n\n## Shape\n- Radius: cards ${E.rCard}px, buttons ${rad(E.rBtn)}, inputs ${rad(E.rInput)}, chips ${rad(E.rChip)}.\n- Borders: cards ${E.bwCard}px ${E.bStyle}, controls ${E.bwCtl}px.\n- Shadow: ${S.shadow} (${E.shadow}).\n- Spacing unit ${S.unit}px, card padding ${E.pad}px, gaps ${E.gap}px.\n\n## Components\n- ${comp.replace(/ · /g,"\n- ")}\n\n## Texture, icons, motion\n- Pattern: ${S.pattern}${S.pattern!=="none"?` (${E.patSize}px, ${Math.round(E.patOp*100)}%)`:""}. Grain ${Math.round(S.grain*100)}%. Card blur ${E.glass}px at ${E.cardA}% opacity.\n- Icons: outline, ${S.icSw}px stroke, ${E.icCap} line ends.\n- Motion: ${S.dur}ms, ${E.easing}. Hover lifts ${E.lift}px, press scales to ${E.press}. Respect prefers-reduced-motion.\n`;
