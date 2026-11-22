@@ -74,10 +74,16 @@ Asset-catalog colours are the native dark-mode mechanism; a Swift `Color(hex:)`
 extension is simpler but loses the appearance switch. Recommend the catalog for
 colours, Swift for the rest.
 
-**One set is one mode.** A token set carries `mode: "light"` or `"dark"`, not
-both. To get both iOS appearances, publish two sets (`clay-light@1.0`,
-`clay-dark@1.0`) and merge them by token name in the exporter. This is a real
-gap, not a detail — decide whether the iOS exporter accepts a pair or one set.
+**One set is one mode; the exporter takes one or two.** A token set carries
+`mode: "light"` or `"dark"`, not both. The iOS exporter accepts either:
+
+- **one set** → both light and dark appearances use it (a single-mode app);
+- **a pair** (`clay-light@1.0` + `clay-dark@1.0`) → light and dark split by
+  token name into one artifact.
+
+A pair is the unit a mobile app actually needs, so it is the recommended input;
+one set stays legal so a single-mode app isn't forced to publish a second one.
+Either way the exporter does the merge — the consumer never glues two files.
 
 ## Android
 
@@ -92,7 +98,7 @@ Same split, Android's names:
 | `shadow.*` | Compose `elevation`/`shadow` — partial, document the loss |
 
 Compose is the better target (`Color.kt`, `Dimens.kt`, `Type.kt`); XML is the
-legacy path. One set = one mode, same as iOS.
+legacy path. Same input rule as iOS: one set or a pair, the exporter merges.
 
 ## Order of work
 
@@ -103,9 +109,10 @@ legacy path. One set = one mode, same as iOS.
 
 ## Open questions for the owner
 
-1. **Light/dark pairs.** Does the iOS/Android exporter take one set or a pair?
-   One set is simpler; a pair is what a mobile app actually needs. I lean pair,
-   but it changes the exporter's input.
+1. ~~**Light/dark pairs.**~~ **Decided 2026-11-21: either.** The mobile
+   exporter takes one set or a pair. One set means both appearances use it; a
+   pair means light and dark split by token name. The exporter merges; the
+   consumer never glues two files.
 2. **Figma's gaps.** Is omitting shadows and easing acceptable, or should the
    Figma projection carry them as strings so nothing silently disappears? I lean
    omit-and-document; a string shadow is not a shadow.
