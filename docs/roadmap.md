@@ -13,16 +13,17 @@ the module makes it a contract.
 ## Phases
 
 **Phase 0 — emit format v1. ✅ done 2026-11-21.**
-The JSON export now emits `$version: "1.0"`, types every leaf, and promises key
-order — 44 tests green, and the Contract level (the `tokens` module's `validate`
-over all nine presets) passes 9/9. An export a consumer can pin. See
-`docs/token-set.md`.
+The JSON export now emits `$version: "1.0"` and types every leaf — 44 tests
+green, and the Contract level (the `tokens` module's `validate` over all nine
+presets) passes 9/9. An export a consumer can pin. Key order is *not* promised
+(suite ruling): consumers read by name. See `docs/token-set.md`.
 
-*Open for suite:* statline asked for a second border level and a second muted
-level (it maps `line`/`line-2` from one `border`, `ink-2`/`ink-3` from one
-`muted`). That is new keys → **v1.1** (MINOR) and needs a `derive()` change, so
-it stays out of Phase 0. Decide whether to ship v1.1 after v1.0.0 lands or
-defer.
+*Deferred by suite, 2026-11-21:* statline asked for a second border level and a
+second muted level (it maps `line`/`line-2` from one `border`, `ink-2`/`ink-3`
+from one `muted`). That is new keys → **v1.1** (MINOR). Suite ruled to hold
+v1.0.0 stable and not grow the shared vocabulary from one repo's shape; "a
+partial set is legal" lets statline keep its own fallbacks today. It becomes
+v1.1 when a second consumer (or Token Forge's own UI) needs it.
 
 **Phase 1 — the `tokens` module. ✅ done.**
 Shipped by suite meta as `suite/modules/tokens/` (v1.0.0, 12 tests green),

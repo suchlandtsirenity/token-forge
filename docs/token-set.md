@@ -46,10 +46,11 @@ from memory:
 - **`$forge`:** only tested for presence; nothing reads inside. Private is safe.
 - **Two asks, both lossy today:** `line` and `line-2` both come from `border`;
   `ink-2` and `ink-3` both come from `muted`. A **second border level** and a
-  **second muted level** would let statline map them distinctly. This is a
-  candidate **v1.1** (MINOR: new keys) and needs a `derive()` change, so it is
-  not part of Phase 0. Open question to suite: hold v1.0.0 stable and ship the
-  two extra colours as v1.1, or defer.
+  **second muted level** would let statline map them distinctly. Suite ruled
+  (2026-11-21) to **defer**: new keys are a MINOR → v1.1, but growing the shared
+  vocabulary from one repo's shape is speculative. "A partial set is legal", so
+  statline keeps its own fallbacks on v1.0.0. It becomes v1.1 when a second
+  consumer needs it.
 - **statline's own tokens:** `rink-*` and `series-1/2/3` stay statline's —
   domain/chart-level, not theme tokens. Confirmed.
 
@@ -61,10 +62,9 @@ pinnable. `test/export.test.js` holds the guarantees:
 - [x] emit `$version` (`"<major>.<minor>"`) — the field a consumer pins
 - [x] type every leaf — `$type` first, then `$value`; `color`, `fontFamily`,
       `dimension`, `shadow`, `duration`, `cubicBezier`, `string`
-- [x] promise key order — top level `$version, $description, mode, color, font,
-      size, radius, shadow, motion, components, $forge`; each namespace in its
-      vocabulary order. One quirk: JS enumerates integer-like keys first, so
-      `size` comes out `0,1,2,3,4,-1`; that order is what the test pins.
+- [x] key order is **not** promised. A consumer reads by name. JS enumerates
+      integer-like keys first, so `size` comes out `0,1,2,3,4,-1`; the test
+      records that as reality, not as a guarantee. (suite ruling, 2026-11-21)
 
 The Contract level (the `tokens` module's `validate` over all nine presets)
 passes 9/9. See [roadmap.md](roadmap.md), Phase 0.
