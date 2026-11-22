@@ -11,16 +11,18 @@ assigns the domain, sets the level, and takes the handover. A lane marked
 ## Domains
 
 Six seams, drawn where the code already splits. Each domain owns a set of files
-and hands over one thing.
+and hands over one thing. **Engine, Quality and Upkeep are fundamental** — every
+meta layer declares them. **Contract, Interface and Exports are declared as the
+space needs them**; Token Forge needs all three, so all six are in use here.
 
-| Domain | Owns | Hands over | Never |
-|---|---|---|---|
-| **Contract** | `docs/token-set.md`, `docs/roadmap.md`, the version handshake with `suite/modules/tokens` | The format guarantees and the pinned version | Changes a token-set key without a MINOR/MAJOR bump |
-| **Engine** | `src/color.js`, `src/tokens.js`, `derive()`, presets | A derivation that still passes every preset's contrast checks | Computes a colour outside `derive()` |
-| **Interface** | `src/controls.js`, `src/app.js`, `index.html` | A control tree that nests and pins as the clay principle asks | Touches DOM/storage outside `app.js` |
-| **Exports** | `src/export.js` | CSS, Tailwind, JSON and Markdown from one `derive()` result | Invents a value an export format needs |
-| **Quality** | `test/`, `.github/workflows/ci.yml` | Green tests and a passing contract check | Loosens a threshold to make a preset pass |
-| **Upkeep** | GitHub Pages, `docs/build-log.md`, the changelog | A short report on what shipped and what drifted | Rewrites history |
+| Domain | Kind | Owns | Hands over | Never |
+|---|---|---|---|---|
+| **Engine** | fundamental | `src/color.js`, `src/tokens.js`, `derive()`, presets | A derivation that still passes every preset's contrast checks | Computes a colour outside `derive()` |
+| **Quality** | fundamental | `test/`, `.github/workflows/ci.yml` | Green tests and a passing contract check | Loosens a threshold to make a preset pass |
+| **Upkeep** | fundamental | GitHub Pages, `docs/build-log.md`, the changelog | A short report on what shipped and what drifted | Rewrites history |
+| **Contract** | as needed | `docs/token-set.md`, `docs/roadmap.md`, the version handshake with `suite/modules/tokens` | The format guarantees and the pinned version | Changes a token-set key without a MINOR/MAJOR bump |
+| **Interface** | as needed | `src/controls.js`, `src/app.js`, `index.html` | A control tree that nests and pins as the clay principle asks | Touches DOM/storage outside `app.js` |
+| **Exports** | as needed | `src/export.js` | CSS, Tailwind, JSON and Markdown from one `derive()` result | Invents a value an export format needs |
 
 The contract is the only domain that crosses the repo boundary. Everything else
 stays inside Token Forge; the module is met through the contract domain, never
@@ -28,14 +30,16 @@ read from inside.
 
 ## Levels
 
-Three checks, each with a trigger. The names match statline's so the ecosystem
-reads the same, but the contents are what this repo can actually run.
+Three checks, each with a trigger. **Fast and Full are fundamental** — every meta
+layer declares them. **Contract is declared as the space needs it**, because
+Token Forge produces something another repo consumes. The names match statline's
+so the ecosystem reads the same, but the contents are what this repo can run.
 
-| Level | What runs | When | Where |
-|---|---|---|---|
-| **Fast** | `npm test` — colour maths, derivation, presets, exports, control tree (39 tests, no DOM) | every commit | the worktree, and GitHub Actions |
-| **Full** | Fast + a browser pass: page loads, a preset renders, each export format produces output | before merging into `main` | the worktree, via browser QA |
-| **Contract** | The `tokens` module's `validate` over every preset's JSON export | before a release tag, and whenever the token set changes | the worktree, importing `derive()` + `export.js` |
+| Level | Kind | What runs | When | Where |
+|---|---|---|---|---|
+| **Fast** | fundamental | `npm test` — colour maths, derivation, presets, exports, control tree (44 tests, no DOM) | every commit | the worktree, and GitHub Actions |
+| **Full** | fundamental | Fast + a browser pass: page loads, a preset renders, each export format produces output | before merging into `main` | the worktree, via browser QA |
+| **Contract** | as needed | The `tokens` module's `validate` over every preset's JSON export | before a release tag, and whenever the token set changes | the worktree, importing `derive()` + `export.js` |
 
 The Contract level is this repo's equivalent of statline's data level: it proves
 the thing consumers pin actually holds. Suite meta already ran it by hand over
@@ -55,11 +59,18 @@ all nine presets; the level makes it repeatable.
 ## The shared contract
 
 Domains and levels are now a meta-layer contract, not a per-repo invention:
-`suite/docs/meta-layers.md`. The six names are a **shared vocabulary**; a repo
-declares only the domains it genuinely has — six is a superset, not a quota.
-Cross-repo questions ("which domain owns the contract?") get the same answer
-everywhere. This repo declares all six today; if a seam doesn't earn its keep,
-drop it rather than rename it.
+`suite/docs/meta-layers.md`. It is **not a blanket "declare all six"**:
+
+- **Fundamental** — Engine, Quality, Upkeep; and Fast, Full. Every meta layer
+  declares these.
+- **As the space needs them** — Contract (produces something another repo
+  consumes), Interface (has a surface), Exports (emits files); and a third level
+  named by what it proves (Contract, or statline's Data). A space may add a
+  domain the six don't name when its own seams demand it.
+
+The six names are a **shared toolkit for cross-repo reading**, not a closed
+list. Token Forge needs all six domains and all three levels, so its model is
+unchanged in practice; the contract just doesn't force them on anyone else.
 
 ## Where the Contract level runs
 
