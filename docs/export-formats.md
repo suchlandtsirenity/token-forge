@@ -113,9 +113,10 @@ legacy path. Same input rule as iOS: one set or a pair, the exporter merges.
    exporter takes one set or a pair. One set means both appearances use it; a
    pair means light and dark split by token name. The exporter merges; the
    consumer never glues two files.
-2. **Figma's gaps.** Is omitting shadows and easing acceptable, or should the
-   Figma projection carry them as strings so nothing silently disappears? I lean
-   omit-and-document; a string shadow is not a shadow.
+2. ~~**Figma's gaps.**~~ **Decided 2026-11-21: omit and document.** The Figma
+   projection drops `shadow.*` and `motion.easing` rather than carrying them as
+   strings — a string shadow is not a shadow, and a silent approximation is
+   worse than a stated omission. The export's own README names what it omits.
 3. **Plain DTCG name.** Call the file format "DTCG" or "token-set JSON"? The
    module already calls the format "token set"; DTCG is the wire shape. I lean
    "token-set JSON, DTCG-compatible" so the name stays ours.
