@@ -36,14 +36,19 @@ statline's tokens". The mapping stays in statline (a module holds no project's
 data). Its `web/themes/*.json` stop being hand-authored hex and start deriving
 from Token Forge — which its own `CLAUDE.md` already asks for.
 
-**Phase 3 — token sets as artifacts.**
-Let a built system be saved and named outside the browser: a `sets/` folder,
-each entry a token set plus its `$forge`, served from GitHub Pages at a stable
-URL. "The visual language" becomes a library you can point at.
+**Phase 3 — token sets as artifacts. 🔎 designed.**
+A built system saved and named outside the browser: a `sets/` folder, each entry
+a token set plus its `$forge`, served from GitHub Pages at a stable URL. Design
+in [sets.md](sets.md): identity `name@major.minor`, versioned URLs, one manifest
+with hashes, the `tokens` module naming a set without fetching it. "The visual
+language" becomes a library you can point at.
 
-**Phase 4 — more exports from one set.**
+**Phase 4 — more exports from one set. 🔎 designed.**
 Figma variables, iOS/Android, plain DTCG — all derived from the one token set
-`derive()` already produces, so a new format never invents a value.
+`derive()` already produces. Design in [export-formats.md](export-formats.md):
+plain DTCG as the base, then Figma as a constrained projection (Figma imports
+DTCG directly), then iOS, then Android. A format that cannot carry a token omits
+it rather than approximating it.
 
 ## Ownership
 

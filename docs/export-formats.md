@@ -1,0 +1,122 @@
+# More exports from one set — Phase 4 design
+
+**Status:** design, 2026-11-21. No code yet. Every format here reads the same
+`derive()` result; none may invent a value. A format that cannot carry a token
+says so and omits it — it does not approximate it.
+
+## The base: plain DTCG
+
+The JSON export is already DTCG-shaped, but it carries two things DTCG does not
+define (`$description`, `$forge`) and two value shapes DTCG does not use
+(`"16px"` strings, `oklch()` strings). **Plain DTCG** is the interchange file:
+
+- drop `$description` and `$forge`;
+- keep `$version`, `mode`, and every namespace;
+- convert values to DTCG-native shapes (below).
+
+Everything else in this document is a projection of that file. Build plain DTCG
+first; the platform formats are constraints on top of it.
+
+### Value conversion (one place, not per format)
+
+| Token | Token Forge value | DTCG value |
+|---|---|---|
+| `color.*` | `oklch(…)` string | sRGB hex `"#rrggbb"` (or `{colorSpace,components,alpha}`); OKLCH → sRGB in `color.js` |
+| `size.*`, `radius.*` | `"16px"` | `{ "value": 16, "unit": "px" }` |
+| `font.*` | full CSS stack | `"Inter"` — a single family name, first in the stack, quotes stripped |
+| `motion.duration` | `"180ms"` | `{ "value": 0.18, "unit": "s" }` |
+| `motion.easing` | `cubic-bezier(…)` | `cubicBezier` array of four numbers |
+| `shadow.*` | CSS shadow string | `shadow` object (offsetX/Y, blur, spread, colour) |
+| `components.*` | style string | `string` |
+
+This conversion lives in one function so CSS/Tailwind/Markdown keep the CSS
+strings and the DTCG family gets the native shapes. Two value encodings, one
+`derive()`.
+
+## Figma variables
+
+Figma imports DTCG JSON directly — no custom Figma format is needed. Its import
+rules are the constraint ([Figma: Modes for variables](https://help.figma.com/hc/en-us/articles/15343816063383),
+[DTCG 2025.10](https://www.designtokens.org/TR/2025.10/format/)):
+
+| DTCG type | Figma variable | Constraint |
+|---|---|---|
+| `color` | Color | sRGB or HSL only |
+| `dimension` | Number | unit must be `px` |
+| `fontFamily` | String | **one font name**, not an array |
+| `duration` | Number | unit must be `s` |
+| `number` | Number or boolean | boolean via `$extensions: { "com.figma.type": "boolean" }` |
+| `string` | String | accepted, though not an official DTCG type |
+
+What Figma **cannot** import as a variable: `shadow`, `cubicBezier`, and any
+composite type. So the Figma projection **omits** `shadow.*` and
+`motion.easing`; it keeps `motion.duration`. Nested names normalise to slashes
+(`color.accent` → `color/accent`), and duplicate names keep the first.
+
+**Verdict:** "Figma export" is plain DTCG + these five constraints. It is a
+filter, not a converter. The honest limit: a Figma user gets colours, sizes,
+radii, fonts, durations and string enums — not shadows or easing curves.
+
+## iOS
+
+Two destinations, chosen by what the token is:
+
+| Token | Destination | Shape |
+|---|---|---|
+| `color.*` | Asset catalog `.colorset/Contents.json` | sRGB components, `universal` idiom, optional `dark` appearance |
+| `size.*`, `radius.*` | Swift source constants | `CGFloat` in a `Tokens.Dimension` enum |
+| `font.*` | Swift source | `Font.custom("Inter", size:)` names; family name only |
+| `motion.duration` | Swift source | `TimeInterval` seconds |
+| `shadow.*` | Swift source | `Color` + radius/offset struct |
+| `motion.easing` | Swift source | `Animation.timingCurve` four control points |
+
+Asset-catalog colours are the native dark-mode mechanism; a Swift `Color(hex:)`
+extension is simpler but loses the appearance switch. Recommend the catalog for
+colours, Swift for the rest.
+
+**One set is one mode.** A token set carries `mode: "light"` or `"dark"`, not
+both. To get both iOS appearances, publish two sets (`clay-light@1.0`,
+`clay-dark@1.0`) and merge them by token name in the exporter. This is a real
+gap, not a detail — decide whether the iOS exporter accepts a pair or one set.
+
+## Android
+
+Same split, Android's names:
+
+| Token | Destination |
+|---|---|
+| `color.*` | `res/values/colors.xml` (and `values-night/` for the dark set) |
+| `size.*`, `radius.*` | `res/values/dimens.xml` (`dp`) |
+| `font.*` | `res/font/` family names, or Compose `FontFamily` |
+| `motion.duration` | `res/values/integers.xml` or Compose constant |
+| `shadow.*` | Compose `elevation`/`shadow` — partial, document the loss |
+
+Compose is the better target (`Color.kt`, `Dimens.kt`, `Type.kt`); XML is the
+legacy path. One set = one mode, same as iOS.
+
+## Order of work
+
+1. **Plain DTCG** — the base; also the Figma file.
+2. **Figma** — a constrained projection of #1; cheapest real consumer.
+3. **iOS** — asset catalog + Swift; needs the light/dark pair decision.
+4. **Android** — Compose first, XML second.
+
+## Open questions for the owner
+
+1. **Light/dark pairs.** Does the iOS/Android exporter take one set or a pair?
+   One set is simpler; a pair is what a mobile app actually needs. I lean pair,
+   but it changes the exporter's input.
+2. **Figma's gaps.** Is omitting shadows and easing acceptable, or should the
+   Figma projection carry them as strings so nothing silently disappears? I lean
+   omit-and-document; a string shadow is not a shadow.
+3. **Plain DTCG name.** Call the file format "DTCG" or "token-set JSON"? The
+   module already calls the format "token set"; DTCG is the wire shape. I lean
+   "token-set JSON, DTCG-compatible" so the name stays ours.
+
+## Deliberately not doing
+
+- No per-format hand-tuning of values. One conversion, every format.
+- No format that invents a token to fill a gap. A missing type is an omission,
+  stated in the export's own README.
+- No Flutter/Web/React-Native in this pass. They are the same projection pattern
+  and can wait for demand.
