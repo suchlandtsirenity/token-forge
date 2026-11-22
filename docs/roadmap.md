@@ -1,0 +1,51 @@
+# Roadmap — fleshing Token Forge out
+
+**Status:** 2026-11-21. Each phase is shippable on its own.
+
+## What "fleshing out" means here
+
+Today Token Forge is a **playground**: one live system you tune, then export as
+a file. The ecosystem needs it to be a **provider** — a *token set* with a
+**version**, published as a module consumers **pin**. The informal bridge that
+existed (`statline/web/theme-core.js` sniffing `$forge`) is proof of demand;
+the module makes it a contract.
+
+## Phases
+
+**Phase 0 — emit format v1 (next; Token Forge's own work).**
+The module shipped targeting token-set **v1**, but the export is still **v0**.
+Token Forge owes: emit `$version` (`"<major>.<minor>"`); type every leaf
+(`$type` on `radius`/`font`/`shadow`/`motion`, not only `size`); promise key
+order. *No change to what the app looks like* — only to what it guarantees.
+→ an export a consumer can pin. Unblocks statline.
+
+*Open for suite:* statline asked for a second border level and a second muted
+level (it maps `line`/`line-2` from one `border`, `ink-2`/`ink-3` from one
+`muted`). That is new keys → **v1.1** (MINOR) and needs a `derive()` change, so
+it stays out of Phase 0. Decide whether to ship v1.1 after v1.0.0 lands or
+defer.
+
+**Phase 1 — the `tokens` module. ✅ done.**
+Shipped by suite meta as `suite/modules/tokens/` (v1.0.0, 12 tests green),
+adopting this repo's format text as the module's canonical definition. It
+accepts v0-shaped leaves until Phase 0 lands. See its `DESIGN.md`.
+
+**Phase 2 — statline consumes it (statline's repo, not here).**
+statline's `fromTokenForge` becomes "read a **pinned** token set, map it to
+statline's tokens". The mapping stays in statline (a module holds no project's
+data). Its `web/themes/*.json` stop being hand-authored hex and start deriving
+from Token Forge — which its own `CLAUDE.md` already asks for.
+
+**Phase 3 — token sets as artifacts.**
+Let a built system be saved and named outside the browser: a `sets/` folder,
+each entry a token set plus its `$forge`, served from GitHub Pages at a stable
+URL. "The visual language" becomes a library you can point at.
+
+**Phase 4 — more exports from one set.**
+Figma variables, iOS/Android, plain DTCG — all derived from the one token set
+`derive()` already produces, so a new format never invents a value.
+
+## Ownership
+
+Phase 0 is this repo. Phase 1 landed in `suite` (which owns modules). Phase 2 is
+statline's work in statline's repo, against a pinned token-set version.
