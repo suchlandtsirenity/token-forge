@@ -94,9 +94,10 @@ owns the identity; the consumer owns the base URL.
 3. **Partial sets.** A set is a full export today. Should a set be allowed to be
    a partial (only the colours, say)? The format allows partials; the artifact
    layer could too. I lean no for v1 — a set should be complete.
-4. **`$forge` in the published file.** The roadmap says "a token set plus its
-   `$forge`". That keeps round-trip import working. It also publishes the whole
-   app state. Confirm that is intended for public sets.
+4. ~~**`$forge` in the published file.**~~ **Resolved 2026-11-21: yes.**
+   Token Forge is a public repo and its sets are public. A set carries its
+   `$forge` so round-trip import keeps working; nothing in the app state is
+   secret. Consumers still must not read inside it — presence only.
 
 ## Deliberately not doing
 
