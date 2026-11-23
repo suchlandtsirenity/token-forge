@@ -5,7 +5,7 @@
 name         = "token-forge:meta"
 level        = 1
 max_attempts = 3
-loop         = "0.2.0"
+loop         = "0.3.0"
 
 # What consumers get. Changing any of these changes the token set another repo
 # reads, so a push that touches one is lane 3 regardless of size. The token-set
