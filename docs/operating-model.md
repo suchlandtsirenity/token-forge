@@ -52,9 +52,33 @@ all nine presets; the level makes it repeatable.
 - **Set the level.** A change names the level it must clear before merge. Additive
   work clears Full and merges; anything that changes a token-set key or a
   guaranteed value clears Contract and comes back to the owner first.
+- **Gate before anything hard to undo.** Run `loop gate --spec green.toml
+  --action <push|merge|apply>` before a push, merge or apply. Exit 0 proceeds;
+  exit 2 is **lane 3 — the owner decides**. A push is lane 3 by construction, so
+  it comes to the owner rather than going out directly.
 - **Hold the version.** The Contract domain owns the token-set version; no lane
   bumps it without the meta layer.
 - **Batch decisions.** The owner hears decisions in batches, not per commit.
+
+## The green spec
+
+`green.toml` at the repo root is the lane's green condition, run from the lane:
+
+```sh
+PYTHONPATH=~/portfolio/suite/modules/loop python3 -m loop check --spec green.toml \
+    --root . --base main
+```
+
+- **`loop = "0.1.0"`** is a pin: a spec naming another version exits 2 before
+  anything runs.
+- **`checks`** are the levels above, cheapest first — `check` stops at the first
+  failure. Fast is `npm test`; Full is `scripts/full-check.mjs` (every preset
+  renders in every export format); Contract is `scripts/contract-check.mjs` (the
+  `tokens` module validates every preset's export).
+- **`scope`** is this repo's own paths. A diff that touches another repo is lane 3
+  by construction.
+- Standing lessons live in [constraints.md](constraints.md), each with a stable id
+  a return packet cites.
 
 ## The shared contract
 

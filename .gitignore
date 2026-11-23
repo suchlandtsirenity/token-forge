@@ -1,0 +1,6 @@
+# loop attempt state — committed, it leaks attempts across branches and lanes.
+.loop/
+
+# local scratch
+node_modules/
+*.log

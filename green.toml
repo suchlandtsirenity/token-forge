@@ -1,0 +1,31 @@
+# The green condition for token-forge's meta lane. Written first; every entry is
+# a command that must exit 0. See docs/operating-model.md for the levels and
+# suite/modules/loop/README.md for the exit codes.
+
+name         = "token-forge:meta"
+level        = 1
+max_attempts = 3
+loop         = "0.1.0"
+
+# The lane's own levels, cheapest first — check stops at the first failure.
+checks = [
+  "npm test",                          # Fast: colour maths, derivation, presets, exports, control tree
+  "node scripts/full-check.mjs",       # Full: every preset renders in every export format
+  "node scripts/contract-check.mjs",   # Contract: the tokens module validates every preset's export
+]
+
+# This lane touches only its own repo. A diff outside these is lane 3 by construction.
+scope = [
+  "docs/**",
+  "src/**",
+  "test/**",
+  "scripts/**",
+  "green.toml",
+  ".gitignore",
+  "package.json",
+  "index.html",
+  "README.md",
+  "CLAUDE.md",
+  ".github/**",
+  "LICENSE",
+]
