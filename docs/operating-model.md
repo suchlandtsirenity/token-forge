@@ -54,8 +54,11 @@ all nine presets; the level makes it repeatable.
   guaranteed value clears Contract and comes back to the owner first.
 - **Gate before anything hard to undo.** Run `loop gate --spec green.toml
   --action <push|merge|apply>` before a push, merge or apply. Exit 0 proceeds;
-  exit 2 is **lane 3 — the owner decides**. A push is lane 3 by construction, so
-  it comes to the owner rather than going out directly.
+  exit 2 is **lane 3 — the owner decides**. Since loop 0.2.0 a small push drops to
+  lane 1 only when the gate *positively asserts* all five conditions — green, in
+  scope, no interface touch, no major version rise, fast-forward. Anything unknown
+  keeps it lane 3. **The verdict is about the branch, not the newest commit:** a
+  push sends every unpushed commit, so their union is the blast radius.
 - **Hold the version.** The Contract domain owns the token-set version; no lane
   bumps it without the meta layer.
 - **Batch decisions.** The owner hears decisions in batches, not per commit.
@@ -77,6 +80,9 @@ PYTHONPATH="$SUITE/modules/loop" python3 -m loop check --spec green.toml \
   failure. Fast is `npm test`; Full is `scripts/full-check.mjs` (every preset
   renders in every export format); Contract is `scripts/contract-check.mjs` (the
   `tokens` module validates every preset's export).
+- **`interface`** is what consumers get — the export format and vocabulary, the
+  font stacks, the published sets. A diff touching one keeps a push at lane 3
+  however small, because it changes the token set another repo reads.
 - **`scope`** is this repo's own paths. A diff that touches another repo is lane 3
   by construction.
 - Standing lessons live in [constraints.md](constraints.md), each with a stable id
