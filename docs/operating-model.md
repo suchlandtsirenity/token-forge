@@ -62,10 +62,12 @@ all nine presets; the level makes it repeatable.
 
 ## The green spec
 
-`green.toml` at the repo root is the lane's green condition, run from the lane:
+`green.toml` at the repo root is the lane's green condition, run from the lane.
+`loop` is the shared module; point `PYTHONPATH` at the suite checkout the registry
+(`ecosystem.toml`, `projects.suite`) names — no machine-specific path (C-0003):
 
 ```sh
-PYTHONPATH=~/portfolio/suite/modules/loop python3 -m loop check --spec green.toml \
+PYTHONPATH="$SUITE/modules/loop" python3 -m loop check --spec green.toml \
     --root . --base main
 ```
 

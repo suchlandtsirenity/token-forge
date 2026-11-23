@@ -2,8 +2,9 @@
 // `tokens` module's validate() over the JSON export of every preset.
 //
 // The module is not vendored — it lives in suite. Resolve it without hard-coding
-// an absolute path: an env override, then a sibling checkout, then the ecosystem
-// default under ~/portfolio. Missing module is exit 2 (escalate), not a pass.
+// an absolute path (C-0003): an env override, then a sibling checkout, then the
+// ecosystem's default checkout under the home directory (via os.homedir(), never
+// a literal path). Missing module is exit 2 (escalate), not a pass.
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { resolve, dirname } from "node:path";
