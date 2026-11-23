@@ -5,7 +5,17 @@
 name         = "token-forge:meta"
 level        = 1
 max_attempts = 3
-loop         = "0.1.0"
+loop         = "0.2.0"
+
+# What consumers get. Changing any of these changes the token set another repo
+# reads, so a push that touches one is lane 3 regardless of size. The token-set
+# version lives in src/export.js, so a version bump is an interface touch.
+interface = [
+  "src/export.js",   # the export format — $version, $type, $forge
+  "src/tokens.js",   # the vocabulary and derive() — which keys exist
+  "src/fonts.js",    # the font stacks exported
+  "sets/**",         # published sets + manifest, served from Pages
+]
 
 # The lane's own levels, cheapest first — check stops at the first failure.
 checks = [
